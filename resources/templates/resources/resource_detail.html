@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load notification_tags %}
 
 {% block title %}{{ resource.title }} · 少惰主{% endblock %}
 {% block robots %}{% if resource.access_level == "L0" %}{{ block.super }}{% else %}<meta name="robots" content="noindex,nofollow">{% endif %}{% endblock %}
@@ -12,6 +13,7 @@
     </div>
     <h1 class="detail-title">{{ resource.title }}</h1>
     <p class="lede">{{ resource.summary }}</p>
+    {% item_actions "resource" resource.pk %}
 
     <aside class="boundary-note"><strong>使用边界：</strong>{{ resource.copyright_note|default:"本页访问等级只控制目录与入口可见性，不等同于复制、传播或商业使用授权。请遵守原作者、原网站和网盘文件所附许可。" }}</aside>
 

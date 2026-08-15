@@ -15,6 +15,7 @@
     </nav>
 
     <div class="header-actions">
+      <a class="account-link" href="{% url 'searchapp:search' %}" aria-label="统一搜索">搜索</a>
       <details class="subsite-switcher">
         <summary>站群</summary>
         <div class="subsite-menu">
@@ -25,6 +26,7 @@
         </div>
       </details>
       {% if request.user.is_authenticated %}
+        <a class="account-link" href="{% url 'notifications:inbox' %}">通知</a>
         <a class="account-link" href="{% url 'account_center' %}">{{ request.user.display_name|default:request.user.email }}</a>
       {% else %}
         <a class="account-link" href="{% url 'account_login' %}">登录</a>

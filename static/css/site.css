@@ -1858,3 +1858,10 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
+/* Permission-aware search, subscriptions and notification controls. */
+.item-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin: 1.25rem 0; }
+.item-actions form, .filter-chips form { margin: 0; }
+.catalog-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; margin: 1.5rem 0 2.5rem; }
+.catalog-search input { min-width: 0; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: inherit; }
+.record-card--unread { border-color: var(--accent); }
+.notice-card { padding: 1.25rem; border: 1px solid var(--warning, #d7a84b); border-radius: .75rem; }

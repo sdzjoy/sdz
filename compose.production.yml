@@ -1,0 +1,236 @@
+name: sdzjoy-production
+
+x-app-environment: &app-environment
+  DJANGO_SETTINGS_MODULE: config.settings.production
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY}
+  DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-sdzjoy.com,www.sdzjoy.com}
+  DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://sdzjoy.com,https://www.sdzjoy.com}
+  PUBLIC_SITE_ORIGIN: ${PUBLIC_SITE_ORIGIN:-https://sdzjoy.com}
+  WWW_REDIRECT_HOST: ${WWW_REDIRECT_HOST:-www.sdzjoy.com}
+  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY}
+  IDP_OIDC_PRIVATE_KEY: ${IDP_OIDC_PRIVATE_KEY:?set IDP_OIDC_PRIVATE_KEY}
+  TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:?set TURNSTILE_SITE_KEY}
+  TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:?set TURNSTILE_SECRET_KEY}
+  TURNSTILE_EXPECTED_HOSTNAMES: ${TURNSTILE_EXPECTED_HOSTNAMES:-sdzjoy.com,id.sdzjoy.com}
+  POSTGRES_DB: ${POSTGRES_DB:-sdzjoy}
+  POSTGRES_USER: ${POSTGRES_USER:-sdzjoy}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+  POSTGRES_HOST: db
+  POSTGRES_PORT: "5432"
+  DJANGO_EMAIL_BACKEND: ${DJANGO_EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
+  EMAIL_HOST: ${EMAIL_HOST:-}
+  EMAIL_PORT: ${EMAIL_PORT:-587}
+  EMAIL_USE_TLS: ${EMAIL_USE_TLS:-true}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+  DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-少惰主 <noreply@sdzjoy.com>}
+  CRITICAL_PATH_URLS: ${CRITICAL_PATH_URLS:-/,/account/login/,/search/?q=GB,/standards/,https://hvac.sdzjoy.com/}
+
+x-logging: &rotated-logs
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - max_connections=50
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - work_mem=4MB
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sdzjoy}
+      POSTGRES_USER: ${POSTGRES_USER:-sdzjoy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    mem_limit: 512m
+    cpus: 0.75
+    pids_limit: 150
+    logging: *rotated-logs
+    networks:
+      - backend
+
+  web:
+    image: ${APP_IMAGE:-sdzjoy-platform:current}
+    build:
+      context: .
+    restart: unless-stopped
+    environment: *app-environment
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - media-data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz/', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 4
+      start_period: 30s
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 180
+    logging: *rotated-logs
+    networks:
+      - backend
+      - frontend
+
+  worker:
+    image: ${APP_IMAGE:-sdzjoy-platform:current}
+    restart: unless-stopped
+    command: ["python", "manage.py", "run_worker"]
+    environment: *app-environment
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - media-data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "manage.py", "check_worker_health"]
+      interval: 5m
+      timeout: 15s
+      retries: 2
+      start_period: 90s
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 100
+    logging: *rotated-logs
+    networks:
+      - backend
+      - frontend
+
+  proxy:
+    image: nginxinc/nginx-unprivileged:1.27-alpine
+    restart: unless-stopped
+    read_only: true
+    volumes:
+      - ./ops/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+      - /var/cache/nginx:size=32m,mode=0755
+      - /var/run:size=4m,mode=0755
+    ports:
+      - "127.0.0.1:${SDZJOY_PORT:-8080}:8080"
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz/ >/dev/null"]
+      interval: 20s
+      timeout: 5s
+      retries: 4
+    mem_limit: 128m
+    cpus: 0.25
+    pids_limit: 80
+    logging: *rotated-logs
+    networks:
+      - frontend
+
+  backup:
+    profiles: ["backup"]
+    build:
+      context: ops/backup
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB:-sdzjoy}
+      PGUSER: ${POSTGRES_USER:-sdzjoy}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      RELEASE_IMAGE: ${APP_IMAGE:-sdzjoy-platform:current}
+      AGE_RECIPIENT: ${AGE_RECIPIENT:-}
+      OFFSITE_DEST: ${OFFSITE_DEST:-}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - media-data:/source-media:ro
+      - backup-data:/backups
+      - ${BACKUP_SSH_DIR:-./ops/backup/empty-ssh}:/home/backup/.ssh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 100
+    logging: *rotated-logs
+    networks:
+      - backend
+      - restore
+      - egress
+
+  restore-db:
+    profiles: ["restore-drill"]
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${RESTORE_POSTGRES_DB:-sdzjoy_restore}
+      POSTGRES_USER: ${POSTGRES_USER:-sdzjoy}
+      POSTGRES_PASSWORD: ${RESTORE_POSTGRES_PASSWORD:?set RESTORE_POSTGRES_PASSWORD}
+    volumes:
+      - restore-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    mem_limit: 384m
+    pids_limit: 120
+    logging: *rotated-logs
+    networks:
+      - restore
+
+  restore:
+    profiles: ["restore-drill"]
+    build:
+      context: ops/backup
+    entrypoint: ["/usr/local/bin/restore.sh"]
+    environment:
+      RESTORE_BUNDLE: ${RESTORE_BUNDLE:-/backups/latest.tar.gz}
+      RESTORE_DB_HOST: restore-db
+      RESTORE_DB_NAME: ${RESTORE_POSTGRES_DB:-sdzjoy_restore}
+      RESTORE_DB_USER: ${POSTGRES_USER:-sdzjoy}
+      RESTORE_DB_PASSWORD: ${RESTORE_POSTGRES_PASSWORD:?set RESTORE_POSTGRES_PASSWORD}
+      PRODUCTION_DB_NAME: ${POSTGRES_DB:-sdzjoy}
+      AGE_IDENTITY_FILE: ${AGE_IDENTITY_FILE:-}
+    volumes:
+      - backup-data:/backups
+      - ${BACKUP_AGE_DIR:-./ops/backup/empty-age}:/keys:ro
+    depends_on:
+      restore-db:
+        condition: service_healthy
+    mem_limit: 256m
+    pids_limit: 100
+    logging: *rotated-logs
+    networks:
+      - restore
+
+volumes:
+  postgres-data:
+  media-data:
+  backup-data:
+  restore-postgres-data:
+
+networks:
+  frontend:
+  egress:
+  backend:
+    internal: true
+  restore:
+    internal: true

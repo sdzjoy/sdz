@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load notification_tags %}
 {% block title %}{{ page.seo_title|default:page.title }} · 少惰主{% endblock %}
 {% block og_type %}article{% endblock %}
 {% block structured_data %}
@@ -8,6 +9,7 @@
   <main class="shell detail-page">
     <p class="eyebrow">NOTE · {{ page.noted_on }}</p>
     <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
+    {% item_actions "note" page.pk %}
     {% if page.promoted_article %}<p class="promotion-link">这条随记已整理为：<a href="{{ page.promoted_article.url }}">{{ page.promoted_article.title }}</a></p>{% endif %}
     <div class="prose">{% include "content/_body.html" with body=page.body %}</div>
   </main>

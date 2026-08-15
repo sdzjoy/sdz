@@ -11,7 +11,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +34,25 @@ jobs:
         env:
           DJANGO_SECRET_KEY: ci-compose-secret
           MFA_ENCRYPTION_KEY: ci-compose-mfa-key
+          IDP_OIDC_PRIVATE_KEY: ci-compose-oidc-key
+          TURNSTILE_SITE_KEY: ci-compose-site-key
+          TURNSTILE_SECRET_KEY: ci-compose-turnstile-key
           POSTGRES_PASSWORD: ci-compose-database-password
-        run: docker compose config --quiet
+          RESTORE_POSTGRES_PASSWORD: ci-compose-restore-password
+        run: |
+          docker compose config --quiet
+          docker compose -f compose.production.yml --profile backup --profile restore-drill config --quiet
       - name: Build application image
         run: docker build --tag sdzjoy-platform:ci .
+      - name: Verify isolated backup and restore
+        env:
+          APP_IMAGE: sdzjoy-platform:ci
+          DJANGO_SECRET_KEY: ci-restore-secret
+          MFA_ENCRYPTION_KEY: ci-restore-mfa-key
+          IDP_OIDC_PRIVATE_KEY: ci-restore-oidc-key
+          TURNSTILE_SITE_KEY: ci-restore-site-key
+          TURNSTILE_SECRET_KEY: ci-restore-turnstile-key
+          POSTGRES_PASSWORD: ci-restore-database-password
+          RESTORE_POSTGRES_PASSWORD: ci-isolated-database-password
+          DJANGO_EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+        run: bash scripts/ci_backup_restore.sh

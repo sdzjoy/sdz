@@ -1,0 +1,17 @@
+[Unit]
+Description=SDZJOY encrypted-capable database and media backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sdzjoy
+EnvironmentFile=/opt/sdzjoy/.env
+ExecStart=/usr/bin/docker compose -f compose.production.yml --profile backup run --rm backup
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+[Install]
+WantedBy=multi-user.target
+

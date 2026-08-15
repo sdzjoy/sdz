@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from notifications.models import Event
+from notifications.services import emit_event
 
 from .models import (
     CandidateChange,
@@ -154,12 +155,16 @@ def approve_candidate(*, candidate, actor, note=""):
         note=note.strip()[:1000],
         status_history=history,
     )
-    Event.objects.create(
+    emit_event(
         event_type=event_type,
         title=f"{standard.code} {standard.title_cn}",
         payload={
             "standard_id": standard.pk,
             "standard_slug": standard.slug,
+            "item_type": "standard",
+            "object_id": standard.pk,
+            "topic_ids": list(standard.taxonomies.values_list("pk", flat=True)),
+            "url": standard.get_absolute_url(),
             "candidate_id": locked.pk,
             "status": standard.status,
         },

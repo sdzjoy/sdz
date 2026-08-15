@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "standards",
     "resources",
     "notifications",
+    "searchapp",
+    "operations",
     "allauth",
     "allauth.account",
     "allauth.mfa",
@@ -188,6 +190,12 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "少惰主 <noreply@sdzjoy.com>")
 SERVER_EMAIL = os.getenv("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+
+NOTIFICATION_WORKER_INTERVAL = int(os.getenv("NOTIFICATION_WORKER_INTERVAL", "30"))
+CRITICAL_PATH_URLS = env_list(
+    "CRITICAL_PATH_URLS",
+    "/,/account/login/,/search/?q=GB,/standards/",
+)
 
 MFA_ADAPTER = "accounts.adapters.EncryptedMFAAdapter"
 MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]

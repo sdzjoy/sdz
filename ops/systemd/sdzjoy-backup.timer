@@ -1,0 +1,12 @@
+[Unit]
+Description=Run SDZJOY backup every day
+
+[Timer]
+OnCalendar=*-*-* 03:40:00 Asia/Shanghai
+Persistent=true
+RandomizedDelaySec=20m
+Unit=sdzjoy-backup.service
+
+[Install]
+WantedBy=timers.target
+

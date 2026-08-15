@@ -13,3 +13,8 @@ media/*
 staticfiles/
 var/*
 !var/.gitkeep
+.deployment-state/
+ops/backup/empty-ssh/*
+!ops/backup/empty-ssh/.gitkeep
+ops/backup/empty-age/*
+!ops/backup/empty-age/.gitkeep

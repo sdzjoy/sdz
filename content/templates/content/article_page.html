@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load notification_tags %}
 {% block title %}{{ page.seo_title|default:page.title }} · 少惰主{% endblock %}
 {% block og_type %}article{% endblock %}
 {% block structured_data %}
@@ -8,6 +9,7 @@
   <main class="shell detail-page article-page">
     <p class="eyebrow">ARTICLE · {{ page.published_on }} · {{ page.reading_minutes }} MIN</p>
     <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
+    {% item_actions "article" page.pk %}
     {% if page.project %}<p>所属项目：<a href="{{ page.project.url }}">{{ page.project.title }}</a></p>{% endif %}
     <div class="prose reading-surface">{% include "content/_body.html" with body=page.body %}</div>
   </main>

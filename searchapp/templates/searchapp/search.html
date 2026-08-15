@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}统一搜索 · 少惰主{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block content %}
+<main class="page-shell page-shell--narrow">
+  <header class="page-hero page-hero--compact">
+    <p class="eyebrow">SEARCH</p><h1>统一搜索</h1>
+    <p>项目、文章、随记、规范与资源，在一个入口内按你的会员权限检索。</p>
+  </header>
+  <form class="catalog-search" method="get" action="{% url 'searchapp:search' %}">
+    <label class="sr-only" for="site-search">搜索内容</label>
+    <input id="site-search" type="search" name="q" value="{{ query }}" maxlength="160" placeholder="输入规范编号、文章主题或资源名称" required>
+    <button class="button" type="submit">搜索</button>
+  </form>
+  {% if degraded %}
+    <section class="notice-card"><h2>搜索暂时不可用</h2><p>浏览栏目仍然正常，你可以先从规范、资源、文章或项目栏目进入。</p></section>
+  {% elif query and not groups %}
+    <section class="empty-state"><h2>没有找到匹配内容</h2><p>可以尝试更短的关键词或规范编号。</p></section>
+  {% endif %}
+  {% for kind, items in groups.items %}
+    <section class="catalog-section">
+      <div class="section-heading section-heading--compact"><h2>{{ items.0.get_kind_display }} <small>{{ items|length }}</small></h2></div>
+      <div class="record-grid">
+        {% for item in items %}<article class="record-card"><span class="scope-badge">{{ item.get_kind_display }}</span><h3><a href="{{ item.url }}">{{ item.title }}</a></h3><p>{{ item.summary|truncatechars:180 }}</p></article>{% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</main>
+{% endblock %}

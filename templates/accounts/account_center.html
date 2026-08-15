@@ -13,6 +13,9 @@
     </dl>
 
     <nav class="account-actions" aria-label="账号安全">
+      <a href="{% url 'notifications:inbox' %}">站内通知</a>
+      <a href="{% url 'notifications:saved_items' %}">收藏与订阅</a>
+      <a href="{% url 'notifications:preferences' %}">通知偏好</a>
       <a href="{% url 'account_email' %}">邮箱管理</a>
       <a href="{% url 'account_change_password' %}">修改密码</a>
       <a href="{% url 'mfa_index' %}">通行密钥与动态验证码</a>

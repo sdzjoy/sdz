@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load notification_tags %}
 
 {% block title %}{{ standard.code }} {{ standard.title_cn }} · 少惰主{% endblock %}
 {% block og_type %}article{% endblock %}
@@ -14,6 +15,7 @@
     <p class="record-code record-code--large">{{ standard.code }}</p>
     <h1 class="detail-title">{{ standard.title_cn }}</h1>
     {% if standard.title_en %}<p class="lede">{{ standard.title_en }}</p>{% endif %}
+    {% item_actions "standard" standard.pk %}
 
     {% if standard.jurisdiction == "foreign" %}
       <aside class="boundary-note"><strong>使用边界：</strong>本条为国外技术参考，不能直接替代中国项目适用的强制性规范与法定要求。</aside>

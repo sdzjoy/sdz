@@ -35,6 +35,7 @@ class PrivateResponseMiddleware:
         "/account/",
         "/identity/",
         "/resources/",
+        "/search/",
         "/cms/",
         "/django-admin/",
     )

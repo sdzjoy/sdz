@@ -1,0 +1,7 @@
+<div class="item-actions" aria-label="收藏与订阅">
+  {% if request.user.is_authenticated %}
+    <form method="post" action="{% url 'notifications:toggle_item' 'favorite' %}">{% csrf_token %}<input type="hidden" name="item_type" value="{{ item_type }}"><input type="hidden" name="object_id" value="{{ object_id }}"><input type="hidden" name="next" value="{{ request.path }}"><button class="button button--ghost" type="submit">{% if favorite %}取消收藏{% else %}收藏{% endif %}</button></form>
+    <form method="post" action="{% url 'notifications:toggle_item' 'subscription' %}">{% csrf_token %}<input type="hidden" name="item_type" value="{{ item_type }}"><input type="hidden" name="object_id" value="{{ object_id }}"><input type="hidden" name="next" value="{{ request.path }}"><button class="button button--ghost" type="submit">{% if subscribed %}取消订阅{% else %}订阅变化{% endif %}</button></form>
+  {% else %}<a class="button button--ghost" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">登录后收藏或订阅</a>{% endif %}
+</div>
+

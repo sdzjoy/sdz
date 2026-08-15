@@ -46,4 +46,19 @@ def change_membership_level(*, user, to_level, reason, actor=None):
         changed_by=actor,
     )
     user.membership_level = to_level
+    from notifications.models import Event
+    from notifications.services import emit_event
+
+    transaction.on_commit(
+        lambda: emit_event(
+            event_type=Event.EventType.MEMBERSHIP_CHANGED,
+            title=f"会员等级已调整为 {locked_user.get_membership_level_display()}",
+            payload={
+                "user_id": locked_user.pk,
+                "summary": reason,
+                "url": "/account/",
+            },
+            dedupe_key=f"membership-change:{change.pk}",
+        )
+    )
     return change
