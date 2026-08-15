@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}工程资源站 · 少惰主{% endblock %}
+
+{% block content %}
+  <main class="shell listing-page catalog-page resource-page">
+    <p class="eyebrow">CURATED ENGINEERING RESOURCES</p>
+    <div class="catalog-intro">
+      <div>
+        <h1 class="section-title">工程资源站</h1>
+        <p class="lede">这里只保存经过整理的目录、版本和网盘入口，实际文件仍在外部网盘。访问等级与版权状态彼此独立：看得见，不代表获得复制或传播授权。</p>
+      </div>
+      {% if request.user.is_authenticated %}
+        <span class="membership-chip">当前等级 · {{ request.user.get_membership_level_display }}</span>
+      {% else %}
+        <a class="button button--ghost" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">登录查看会员资源</a>
+      {% endif %}
+    </div>
+
+    <form class="filter-panel filter-panel--simple" method="get" role="search">
+      <label class="filter-panel__query"><span>名称、简介、作者或格式</span><input type="search" name="q" value="{{ query }}" placeholder="只搜索你当前有权查看的资源"></label>
+      <button class="button button--primary" type="submit">查询</button>
+    </form>
+
+    <div class="catalog-summary"><span>当前可见 {{ resources|length }} 条</span>{% if query %}<a href="{% url 'resources:resource_list' %}">清除查询</a>{% endif %}</div>
+    <div class="record-list">
+      {% for resource in resources %}
+        <article class="record-card resource-card">
+          <div class="record-card__head">
+            <span class="scope-badge access-badge--{{ resource.access_level|lower }}">{{ resource.get_access_level_display }}</span>
+            <span class="verification">{{ resource.get_copyright_status_display }}</span>
+          </div>
+          <p class="record-code">{% if resource.file_format %}{{ resource.file_format }}{% else %}RESOURCE{% endif %}</p>
+          <h2><a href="{{ resource.get_absolute_url }}">{{ resource.title }}</a></h2>
+          <p class="record-subtitle">{{ resource.summary|truncatechars:150 }}</p>
+          <div class="record-facts">
+            {% if resource.author %}<span>{{ resource.author }}</span>{% endif %}
+            {% if resource.size_bytes %}<span>{{ resource.size_bytes|filesizeformat }}</span>{% endif %}
+            {% with version=resource.versions.all|first %}{% if version %}<span>{{ version.version }}</span>{% endif %}{% endwith %}
+          </div>
+          <div class="tag-row">{% for term in resource.taxonomies.all|slice:":5" %}<span>{{ term.name }}</span>{% endfor %}</div>
+          <div class="record-card__foot"><span>查看版本与入口</span><span aria-hidden="true">→</span></div>
+        </article>
+      {% empty %}
+        <section class="empty-state">
+          <p class="eyebrow">HONEST EMPTY STATE</p>
+          <h2>{% if query %}没有符合条件的可见资源{% else %}当前等级暂无已发布资源{% endif %}</h2>
+          <p>资源站不会批量搬运整个网盘。只有来源、版本、版权说明和入口状态都整理清楚的项目才会发布。</p>
+        </section>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

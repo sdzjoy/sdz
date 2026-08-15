@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <div id="content-main">
+    <p>先读取并校验所有行，不会立即创建公开资源。只有整个批次无错误时，才可以回到列表执行“确认发布”。</p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="submit-row"><input type="submit" value="生成预览" class="default"></div>
+    </form>
+  </div>
+{% endblock %}

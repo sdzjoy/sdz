@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ publication.title }} · 少惰主{% endblock %}
+
+{% block content %}
+  <main class="shell detail-page catalog-detail">
+    <p class="eyebrow">{{ publication_type }}</p>
+    <h1 class="detail-title">{{ publication.title }}</h1>
+    {% if publication.subtitle %}<p class="lede">{{ publication.subtitle }}</p>{% endif %}
+    <section class="record-section">
+      <dl class="fact-grid">
+        <div><dt>作者或编者</dt><dd>{{ publication.authors|default:"—" }}</dd></div>
+        <div><dt>版次</dt><dd>{{ publication.edition|default:"—" }}</dd></div>
+        <div><dt>出版社或机构</dt><dd>{{ publication.publisher|default:"—" }}</dd></div>
+        <div><dt>出版日期</dt><dd>{{ publication.published_on|date:"Y-m-d"|default:"—" }}</dd></div>
+        <div><dt>ISBN</dt><dd>{{ publication.isbn|default:"—" }}</dd></div>
+      </dl>
+      {% if publication.summary %}<div class="record-copy"><h2>简介</h2><p>{{ publication.summary|linebreaksbr }}</p></div>{% endif %}
+      {% if publication.version_notes %}<div class="record-copy"><h2>版本说明</h2><p>{{ publication.version_notes|linebreaksbr }}</p></div>{% endif %}
+      {% if publication.taxonomies.exists %}<div class="tag-row tag-row--large">{% for term in publication.taxonomies.all %}<span>{{ term.name }}</span>{% endfor %}</div>{% endif %}
+    </section>
+    {% if publication.related_standards.exists %}
+      <section class="record-section"><div class="section-heading section-heading--compact"><div><p class="eyebrow">RELATED</p><h2>相关标准</h2></div></div><div class="relation-grid">{% for standard in publication.related_standards.all %}<a href="{{ standard.get_absolute_url }}"><strong>{{ standard.code }}</strong><span>{{ standard.title_cn }}</span></a>{% endfor %}</div></section>
+    {% endif %}
+    {% if publication.official_url %}<p class="boundary-note"><strong>合法来源：</strong><a href="{{ publication.official_url }}" rel="noopener noreferrer">访问来源页面</a>{% if publication.legal_source_note %} · {{ publication.legal_source_note }}{% endif %}</p>{% endif %}
+    <p><a class="text-link" href="{% url 'standards:publication_list' %}">← 返回手册与参考书目录</a></p>
+  </main>
+{% endblock %}

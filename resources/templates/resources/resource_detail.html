@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource.title }} · 少惰主{% endblock %}
+{% block robots %}{% if resource.access_level == "L0" %}{{ block.super }}{% else %}<meta name="robots" content="noindex,nofollow">{% endif %}{% endblock %}
+
+{% block content %}
+  <main class="shell detail-page catalog-detail resource-detail">
+    <p class="eyebrow">RESOURCE RECORD</p>
+    <div class="detail-badges">
+      <span class="scope-badge access-badge--{{ resource.access_level|lower }}">{{ resource.get_access_level_display }}</span>
+      <span class="verification">{{ resource.get_copyright_status_display }}</span>
+    </div>
+    <h1 class="detail-title">{{ resource.title }}</h1>
+    <p class="lede">{{ resource.summary }}</p>
+
+    <aside class="boundary-note"><strong>使用边界：</strong>{{ resource.copyright_note|default:"本页访问等级只控制目录与入口可见性，不等同于复制、传播或商业使用授权。请遵守原作者、原网站和网盘文件所附许可。" }}</aside>
+
+    <section class="record-section" aria-labelledby="resource-facts-heading">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">01 · METADATA</p><h2 id="resource-facts-heading">资源信息</h2></div></div>
+      <dl class="fact-grid">
+        <div><dt>作者或制作人</dt><dd>{{ resource.author|default:"—" }}</dd></div>
+        <div><dt>主要格式</dt><dd>{{ resource.file_format|default:"—" }}</dd></div>
+        <div><dt>大小</dt><dd>{% if resource.size_bytes %}{{ resource.size_bytes|filesizeformat }}{% else %}—{% endif %}</dd></div>
+        <div><dt>来源</dt><dd>{% if resource.source_url %}<a href="{{ resource.source_url }}" rel="noopener noreferrer">{{ resource.source_name|default:"访问来源" }}</a>{% else %}{{ resource.source_name|default:"—" }}{% endif %}</dd></div>
+        <div><dt>校验算法</dt><dd>{{ resource.checksum_algorithm|default:"—" }}</dd></div>
+        <div><dt>校验值</dt><dd class="hash-value">{{ resource.checksum_value|default:"—" }}</dd></div>
+      </dl>
+      {% if resource.screenshot %}<figure class="resource-preview"><img src="{{ resource.screenshot.url }}" alt="{{ resource.screenshot_alt|default:resource.title }}"></figure>{% endif %}
+      {% if resource.taxonomies.exists %}<div class="tag-row tag-row--large">{% for term in resource.taxonomies.all %}<span>{{ term.name }}</span>{% endfor %}</div>{% endif %}
+    </section>
+
+    <section class="record-section" aria-labelledby="versions-heading">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">02 · VERSIONS</p><h2 id="versions-heading">版本记录</h2></div></div>
+      <div class="version-list">
+        {% for version in resource.versions.all %}
+          <article><div><strong>{{ version.version }}</strong>{% if version.is_current %}<span class="verification verification--ok">当前版本</span>{% endif %}</div><p>{{ version.change_notes|default:"未单独填写版本说明。" }}</p><small>{% if version.released_on %}{{ version.released_on|date:"Y-m-d" }}{% endif %}{% if version.filename %} · {{ version.filename }}{% endif %}</small></article>
+        {% empty %}<p class="muted-copy">尚未单独建立版本记录，请以资源信息和网盘文件为准。</p>{% endfor %}
+      </div>
+    </section>
+
+    <section class="record-section" aria-labelledby="mirrors-heading">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">03 · EXTERNAL MIRRORS</p><h2 id="mirrors-heading">可用入口</h2></div><span>{{ resource.active_mirrors|length }} 个</span></div>
+      <div class="mirror-grid">
+        {% for mirror in resource.active_mirrors %}
+          <article>
+            <p class="eyebrow">{{ mirror.get_provider_display }}</p>
+            <h3>{{ mirror.label|default:mirror.get_provider_display }}</h3>
+            {% if mirror.extraction_code %}<p class="extraction-code"><span>提取码</span><strong>{{ mirror.extraction_code }}</strong></p>{% endif %}
+            <a class="button button--primary" href="{{ mirror.share_url }}" target="_blank" rel="nofollow noopener noreferrer">打开外部网盘 <span aria-hidden="true">↗</span></a>
+            <small>{% if mirror.last_verified_at %}最后验证 {{ mirror.last_verified_at|date:"Y-m-d H:i" }}{% else %}尚未记录人工验证时间{% endif %}</small>
+          </article>
+        {% empty %}<p class="boundary-note">当前没有可用入口。失效或已隐藏的镜像不会出现在这里，其他镜像不受影响。</p>{% endfor %}
+      </div>
+    </section>
+
+    {% if resource.related_standards.exists %}
+      <section class="record-section"><div class="section-heading section-heading--compact"><div><p class="eyebrow">04 · RELATED</p><h2>相关标准</h2></div></div><div class="relation-grid">{% for standard in resource.related_standards.all %}<a href="{{ standard.get_absolute_url }}"><strong>{{ standard.code }}</strong><span>{{ standard.title_cn }}</span></a>{% endfor %}</div></section>
+    {% endif %}
+
+    {% if request.user.is_authenticated %}
+      <details class="feedback-panel">
+        <summary>反馈入口失效或信息错误</summary>
+        <form method="post" action="{% url 'resources:resource_feedback' resource.slug %}">
+          {% csrf_token %}
+          <label><span>问题类型</span><select name="issue_type" required>{% for value, label in issue_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+          <label><span>相关入口（可选）</span><select name="mirror"><option value="">整个资源</option>{% for mirror in resource.active_mirrors %}<option value="{{ mirror.pk }}">{{ mirror.get_provider_display }}</option>{% endfor %}</select></label>
+          <label><span>补充说明</span><textarea name="details" maxlength="1500" rows="4"></textarea></label>
+          <button class="button button--primary" type="submit">提交反馈</button>
+        </form>
+      </details>
+    {% endif %}
+    <p><a class="text-link" href="{% url 'resources:resource_list' %}">← 返回资源站</a></p>
+  </main>
+{% endblock %}

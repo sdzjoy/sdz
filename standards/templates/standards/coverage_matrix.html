@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}数据中心暖通规范覆盖矩阵 · 少惰主{% endblock %}
+
+{% block content %}
+  <main class="shell listing-page matrix-page">
+    <p class="eyebrow">COVERAGE MATRIX</p>
+    <h1 class="section-title">覆盖矩阵</h1>
+    <p class="lede">只统计“国内设计依据”中已人工核验、现行或即将实施的标准。空格是待补齐或待解释的覆盖缺口，不用未核验条目凑数。</p>
+
+    {% if matrix.stages %}
+      <div class="matrix-scroll" tabindex="0" role="region" aria-label="数据中心系统与设计阶段覆盖矩阵">
+        <table class="coverage-table">
+          <thead><tr><th scope="col">数据中心系统</th>{% for stage in matrix.stages %}<th scope="col">{{ stage.name }}</th>{% endfor %}<th scope="col">判断</th></tr></thead>
+          <tbody>
+            {% for row in matrix.rows %}
+              <tr>
+                <th scope="row">{{ row.system.name }}</th>
+                {% for cell in row.cells %}
+                  <td class="{% if not cell.count %}matrix-gap{% endif %}">
+                    {% if cell.count %}
+                      <strong>{{ cell.count }}</strong>
+                      <details><summary>查看</summary>{% for standard in cell.standards %}<a href="{{ standard.get_absolute_url }}">{{ standard.code }}</a>{% endfor %}</details>
+                    {% else %}<span aria-label="空白类别">待补</span>{% endif %}
+                  </td>
+                {% endfor %}
+                <td>{% if row.is_gap %}<span class="scope-badge scope-badge--foreign">整行缺口</span>{% else %}<span class="verification verification--ok">已有覆盖</span>{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="{{ matrix.stages|length|add:2 }}">尚未建立数据中心系统分类。</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <section class="empty-state"><h2>设计阶段分类尚未建立</h2><p>建立分类项并为已核验标准添加标签后，矩阵会自动出现。</p></section>
+    {% endif %}
+    <p><a class="text-link" href="{% url 'standards:standard_list' %}">← 返回规范目录</a></p>
+  </main>
+{% endblock %}

@@ -1,6 +1,8 @@
 from django.conf import settings
 
 SITE_NAVIGATION = (
+    {"key": "standards", "label": "规范", "url": "/standards/"},
+    {"key": "resources", "label": "资源", "url": "/resources/"},
     {"key": "projects", "label": "项目", "url": "/projects/"},
     {"key": "articles", "label": "文章", "url": "/articles/"},
     {"key": "notes", "label": "随记", "url": "/notes/"},

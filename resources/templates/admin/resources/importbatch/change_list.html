@@ -1,0 +1,6 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li><a href="{% url 'admin:resources_importbatch_upload' %}" class="addlink">预览导入 CSV / Excel</a></li>
+  {{ block.super }}
+{% endblock %}

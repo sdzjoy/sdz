@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}手册与参考书目录 · 少惰主{% endblock %}
+
+{% block content %}
+  <main class="shell listing-page catalog-page">
+    <p class="eyebrow">MANUALS &amp; BOOKS</p>
+    <h1 class="section-title">手册与参考书</h1>
+    <p class="lede">手册和参考书拥有自己的版本、作者、出版社与合法来源，不套用标准的“现行/废止”状态。</p>
+    <form class="filter-panel filter-panel--simple" method="get" role="search">
+      <label class="filter-panel__query"><span>名称、作者或 ISBN</span><input type="search" name="q" value="{{ query }}"></label>
+      <button class="button button--primary" type="submit">查询</button>
+    </form>
+
+    <section class="record-section">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">MANUALS</p><h2>技术手册</h2></div><span>{{ manuals|length }} 条</span></div>
+      <div class="record-list record-list--two">
+        {% for item in manuals %}
+          <article class="record-card"><span class="scope-badge">技术手册</span><h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3><p>{{ item.authors|default:item.organization|default:"编制信息待补充" }}</p><div class="record-facts"><span>{{ item.edition|default:"版次待补充" }}</span><span>{{ item.publisher|default:"出版信息待补充" }}</span></div></article>
+        {% empty %}<p class="muted-copy">尚未录入符合条件的技术手册。</p>{% endfor %}
+      </div>
+    </section>
+
+    <section class="record-section">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">REFERENCE BOOKS</p><h2>参考书</h2></div><span>{{ books|length }} 条</span></div>
+      <div class="record-list record-list--two">
+        {% for item in books %}
+          <article class="record-card"><span class="scope-badge">参考书</span><h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3><p>{{ item.authors|default:"作者信息待补充" }}</p><div class="record-facts"><span>{{ item.edition|default:"版次待补充" }}</span><span>{{ item.publisher|default:"出版信息待补充" }}</span></div></article>
+        {% empty %}<p class="muted-copy">尚未录入符合条件的参考书。</p>{% endfor %}
+      </div>
+    </section>
+    <p><a class="text-link" href="{% url 'standards:standard_list' %}">← 返回规范目录</a></p>
+  </main>
+{% endblock %}

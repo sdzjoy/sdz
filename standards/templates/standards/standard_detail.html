@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ standard.code }} {{ standard.title_cn }} · 少惰主{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block content %}
+  <main class="shell detail-page catalog-detail">
+    <p class="eyebrow">STANDARD RECORD</p>
+    <div class="detail-badges">
+      <span class="scope-badge scope-badge--{{ standard.jurisdiction }}">{{ standard.get_jurisdiction_display }}</span>
+      <span class="status-badge">{{ standard.get_status_display }}</span>
+      <span class="verification{% if standard.verification_state == 'verified' %} verification--ok{% endif %}">{{ standard.get_verification_state_display }}</span>
+    </div>
+    <p class="record-code record-code--large">{{ standard.code }}</p>
+    <h1 class="detail-title">{{ standard.title_cn }}</h1>
+    {% if standard.title_en %}<p class="lede">{{ standard.title_en }}</p>{% endif %}
+
+    {% if standard.jurisdiction == "foreign" %}
+      <aside class="boundary-note"><strong>使用边界：</strong>本条为国外技术参考，不能直接替代中国项目适用的强制性规范与法定要求。</aside>
+    {% endif %}
+
+    <section class="record-section" aria-labelledby="basic-heading">
+      <div class="section-heading section-heading--compact">
+        <div><p class="eyebrow">01 · FACTS</p><h2 id="basic-heading">基础信息</h2></div>
+      </div>
+      <dl class="fact-grid">
+        <div><dt>标准类别</dt><dd>{{ standard.get_category_display }}</dd></div>
+        <div><dt>标准性质</dt><dd>{{ standard.get_nature_display }}</dd></div>
+        <div><dt>使用说明</dt><dd>{{ standard.get_use_level_display }}</dd></div>
+        <div><dt>国家或地区</dt><dd>{{ standard.country_region }}</dd></div>
+        <div><dt>ICS</dt><dd>{{ standard.ics_code|default:"—" }}</dd></div>
+        <div><dt>CCS</dt><dd>{{ standard.ccs_code|default:"—" }}</dd></div>
+        <div><dt>发布日期</dt><dd>{{ standard.published_on|date:"Y-m-d"|default:"—" }}</dd></div>
+        <div><dt>实施日期</dt><dd>{{ standard.effective_on|date:"Y-m-d"|default:"—" }}</dd></div>
+        <div><dt>废止日期</dt><dd>{{ standard.withdrawn_on|date:"Y-m-d"|default:"—" }}</dd></div>
+        <div><dt>最后核验</dt><dd>{{ standard.last_verified_at|date:"Y-m-d H:i"|default:"尚未人工核验" }}</dd></div>
+      </dl>
+      {% if standard.summary %}<div class="record-copy"><h3>适用范围与摘要</h3><p>{{ standard.summary|linebreaksbr }}</p></div>{% endif %}
+      {% if standard.taxonomies.exists %}<div class="tag-row tag-row--large">{% for term in standard.taxonomies.all %}<span>{{ term.get_kind_display }} · {{ term.name }}</span>{% endfor %}</div>{% endif %}
+    </section>
+
+    {% if standard.standardorganization_set.exists %}
+      <section class="record-section" aria-labelledby="organization-heading">
+        <div class="section-heading section-heading--compact"><div><p class="eyebrow">02 · ORGANIZATIONS</p><h2 id="organization-heading">发布与编制机构</h2></div></div>
+        <dl class="fact-grid">
+          {% for item in standard.standardorganization_set.all %}
+            <div><dt>{{ item.get_role_display }}</dt><dd>{% if item.organization.official_url %}<a href="{{ item.organization.official_url }}" rel="noopener noreferrer">{{ item.organization }}</a>{% else %}{{ item.organization }}{% endif %}</dd></div>
+          {% endfor %}
+        </dl>
+      </section>
+    {% endif %}
+
+    <section class="record-section" aria-labelledby="relations-heading">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">03 · RELATIONS</p><h2 id="relations-heading">版本与关联</h2></div></div>
+      <div class="relation-grid">
+        {% for relation in standard.outgoing_relations.all %}
+          <a href="{{ relation.target.get_absolute_url }}"><small>{{ relation.get_relation_type_display }}</small><strong>{{ relation.target.code }}</strong><span>{{ relation.target.title_cn }}</span></a>
+        {% endfor %}
+        {% for relation in standard.incoming_relations.all %}
+          <a href="{{ relation.source.get_absolute_url }}"><small>{% if relation.relation_type == "supersedes" %}被其代替{% else %}相关标准{% endif %}</small><strong>{{ relation.source.code }}</strong><span>{{ relation.source.title_cn }}</span></a>
+        {% empty %}{% if not standard.outgoing_relations.exists %}<p class="muted-copy">尚未录入前后代替或相关标准。</p>{% endif %}{% endfor %}
+      </div>
+    </section>
+
+    <section class="record-section" aria-labelledby="evidence-heading">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">04 · EVIDENCE</p><h2 id="evidence-heading">来源证据</h2></div></div>
+      <div class="evidence-list">
+        {% for evidence in standard.evidence.all %}
+          <article>
+            <div><span>{{ evidence.get_source_kind_display }}</span>{% if evidence.is_primary %}<span class="status-badge">主要证据</span>{% endif %}</div>
+            <h3><a href="{{ evidence.url }}" rel="noopener noreferrer">{{ evidence.title }}</a></h3>
+            {% if evidence.publisher %}<p>{{ evidence.publisher }}</p>{% endif %}
+            {% if evidence.excerpt %}<p>{{ evidence.excerpt }}</p>{% endif %}
+            <small>收录于 {{ evidence.captured_at|date:"Y-m-d H:i" }}{% if evidence.verified_at %} · 已人工核验{% endif %}</small>
+          </article>
+        {% empty %}
+          <p class="boundary-note">这条记录尚未补充来源证据，因此不能标记为“已核验”。</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="record-section" aria-labelledby="timeline-heading">
+      <div class="section-heading section-heading--compact"><div><p class="eyebrow">05 · TIMELINE</p><h2 id="timeline-heading">状态时间线</h2></div></div>
+      <div class="timeline record-timeline">
+        {% if standard.published_on %}<article><time>{{ standard.published_on|date:"Y-m-d" }}</time><span>发布</span></article>{% endif %}
+        {% if standard.effective_on %}<article><time>{{ standard.effective_on|date:"Y-m-d" }}</time><span>实施</span></article>{% endif %}
+        {% for history in standard.status_history.all %}<article><time>{{ history.changed_at|date:"Y-m-d" }}</time><span>{{ history.get_from_status_display }} → {{ history.get_to_status_display }}{% if history.note %} · {{ history.note }}{% endif %}</span></article>{% endfor %}
+        {% if standard.withdrawn_on %}<article><time>{{ standard.withdrawn_on|date:"Y-m-d" }}</time><span>{{ standard.get_status_display }}</span></article>{% endif %}
+      </div>
+    </section>
+
+    {% if standard.author_note %}<aside class="boundary-note"><strong>少惰主备注：</strong>{{ standard.author_note|linebreaksbr }}</aside>{% endif %}
+    <p><a class="text-link" href="{% url 'standards:standard_list' %}">← 返回规范目录</a></p>
+  </main>
+{% endblock %}

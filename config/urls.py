@@ -19,6 +19,8 @@ urlpatterns = [
     path("sitemap.xml", sitemap, name="sitemap"),
     path("feeds/articles.xml", ArticleFeed(), name="article_feed"),
     path("feeds/notes.xml", NoteFeed(), name="note_feed"),
+    path("standards/", include("standards.urls")),
+    path("resources/", include("resources.urls")),
     path("account/", include("accounts.urls")),
     path("account/", include("allauth.urls")),
     path("django-admin/", admin.site.urls),

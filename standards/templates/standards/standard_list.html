@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}规范与标准目录 · 少惰主{% endblock %}
+
+{% block content %}
+  <main class="shell listing-page catalog-page">
+    <p class="eyebrow">DATA CENTER HVAC · STANDARDS</p>
+    <div class="catalog-intro">
+      <div>
+        <h1 class="section-title">规范目录</h1>
+        <p class="lede">围绕数据中心暖通设计整理。国内标准是设计依据主线，国外标准仅作技术参考；每条记录保留来源与人工核验状态。</p>
+      </div>
+      <nav class="catalog-actions" aria-label="规范库辅助入口">
+        <a class="button button--ghost" href="{% url 'standards:coverage_matrix' %}">查看覆盖矩阵</a>
+        <a class="button button--ghost" href="{% url 'standards:publication_list' %}">手册与参考书</a>
+      </nav>
+    </div>
+
+    <form class="filter-panel" method="get" role="search">
+      <label class="filter-panel__query">
+        <span>编号、名称、ICS 或 CCS</span>
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="例如 GB 50736 或 91.140">
+      </label>
+      <label>
+        <span>依据定位</span>
+        <select name="jurisdiction">
+          <option value="">全部</option>
+          {% for value, label in jurisdiction_choices %}
+            <option value="{{ value }}"{% if filters.jurisdiction == value %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>状态</span>
+        <select name="status">
+          <option value="">全部</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}"{% if filters.status == value %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>类别</span>
+        <select name="category">
+          <option value="">全部</option>
+          {% for value, label in category_choices %}
+            <option value="{{ value }}"{% if filters.category == value %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>专业分类</span>
+        <select name="taxonomy">
+          <option value="">全部</option>
+          {% regroup taxonomies by get_kind_display as taxonomy_groups %}
+          {% for group in taxonomy_groups %}
+            <optgroup label="{{ group.grouper }}">
+              {% for term in group.list %}
+                <option value="{{ term.slug }}"{% if filters.taxonomy == term.slug %} selected{% endif %}>{{ term.name }}</option>
+              {% endfor %}
+            </optgroup>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="button button--primary" type="submit">筛选</button>
+    </form>
+
+    <div class="catalog-summary" aria-live="polite">
+      <span>共 {{ page_obj.paginator.count }} 条记录</span>
+      {% if filters.q or filters.status or filters.category or filters.jurisdiction or filters.taxonomy %}
+        <a href="{% url 'standards:standard_list' %}">清除筛选</a>
+      {% endif %}
+    </div>
+
+    <div class="record-list">
+      {% for standard in page_obj %}
+        <article class="record-card">
+          <div class="record-card__head">
+            <span class="scope-badge scope-badge--{{ standard.jurisdiction }}">{{ standard.get_jurisdiction_display }}</span>
+            <span class="status-badge">{{ standard.get_status_display }}</span>
+          </div>
+          <p class="record-code">{{ standard.code }}</p>
+          <h2><a href="{{ standard.get_absolute_url }}">{{ standard.title_cn }}</a></h2>
+          {% if standard.title_en %}<p class="record-subtitle">{{ standard.title_en }}</p>{% endif %}
+          <div class="record-facts">
+            <span>{{ standard.get_category_display }}</span>
+            <span>{{ standard.get_nature_display }}</span>
+            {% if standard.effective_on %}<span>{{ standard.effective_on|date:"Y-m-d" }} 实施</span>{% endif %}
+          </div>
+          <div class="tag-row">
+            {% for term in standard.taxonomies.all|slice:":5" %}<span>{{ term.name }}</span>{% endfor %}
+          </div>
+          <div class="record-card__foot">
+            {% if standard.verification_state == "verified" %}
+              <span class="verification verification--ok">已人工核验</span>
+            {% else %}
+              <span class="verification">{{ standard.get_verification_state_display }}</span>
+            {% endif %}
+            <span aria-hidden="true">→</span>
+          </div>
+        </article>
+      {% empty %}
+        <section class="empty-state">
+          <p class="eyebrow">NO MATCH</p>
+          <h2>没有符合条件的记录</h2>
+          <p>可以缩短关键词或清除部分筛选条件。规范数据尚未导入时，这里也会保持诚实的空状态。</p>
+        </section>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="pagination" aria-label="分页">
+        {% if page_obj.has_previous %}<a href="?q={{ filters.q|urlencode }}&status={{ filters.status }}&category={{ filters.category }}&jurisdiction={{ filters.jurisdiction }}&taxonomy={{ filters.taxonomy }}&page={{ page_obj.previous_page_number }}">上一页</a>{% endif %}
+        <span>第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span>
+        {% if page_obj.has_next %}<a href="?q={{ filters.q|urlencode }}&status={{ filters.status }}&category={{ filters.category }}&jurisdiction={{ filters.jurisdiction }}&taxonomy={{ filters.taxonomy }}&page={{ page_obj.next_page_number }}">下一页</a>{% endif %}
+      </nav>
+    {% endif %}
+  </main>
+{% endblock %}

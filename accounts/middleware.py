@@ -31,7 +31,13 @@ class StaffMFARequiredMiddleware:
 
 
 class PrivateResponseMiddleware:
-    private_prefixes = ("/account/", "/identity/", "/cms/", "/django-admin/")
+    private_prefixes = (
+        "/account/",
+        "/identity/",
+        "/resources/",
+        "/cms/",
+        "/django-admin/",
+    )
 
     def __init__(self, get_response):
         self.get_response = get_response
