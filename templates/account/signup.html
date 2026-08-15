@@ -1,0 +1,37 @@
+{% extends "account/base_entrance.html" %}
+{% load allauth i18n %}
+{% block head_title %}注册{% endblock %}
+{% block content %}
+  <p class="eyebrow">CREATE ACCOUNT</p>
+  <h1 class="auth-title">注册少惰主账号</h1>
+  <p>邮箱验证完成后自动获得 L1 普通会员权限。</p>
+  {% url 'account_signup' as action_url %}
+  {% element form form=form method="post" action=action_url tags="entrance,signup" %}
+    {% slot body %}
+      {% csrf_token %}
+      {% element fields form=form %}{% endelement %}
+      {% if TURNSTILE_REQUIRED %}
+        <div class="cf-turnstile"
+             data-sitekey="{{ TURNSTILE_SITE_KEY }}"
+             data-action="signup"
+             data-callback="sdzjoyTurnstileCallback"></div>
+      {% endif %}
+      {{ redirect_field }}
+    {% endslot %}
+    {% slot actions %}
+      {% element button type="submit" tags="prominent,signup" %}创建账号{% endelement %}
+    {% endslot %}
+  {% endelement %}
+  <p>已有账号？<a href="{% url 'account_login' %}">登录</a></p>
+{% endblock %}
+{% block extra_body %}
+  {{ block.super }}
+  {% if TURNSTILE_REQUIRED %}
+    <script>
+      function sdzjoyTurnstileCallback(token) {
+        document.getElementById("id_turnstile_token").value = token;
+      }
+    </script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+{% endblock %}

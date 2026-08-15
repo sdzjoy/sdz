@@ -1,20 +1,42 @@
 {% load static wagtailcore_tags %}
+{% firstof page.search_description page.summary page.intro "工程、系统与数字生活中的真实实践。" as meta_description %}
+{% firstof page.seo_title page.title "少惰主 · SDZJOY" as meta_title %}
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>{% block title %}少惰主 · SDZJOY{% endblock %}</title>
+    <meta name="theme-color" content="#071419">
+    <meta name="description" content="{{ meta_description }}">
+    {% block robots %}<meta name="robots" content="index,follow,max-image-preview:large">{% endblock %}
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="少惰主 · SDZJOY">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{{ meta_title }}">
+    <meta property="og:description" content="{{ meta_description }}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta name="twitter:card" content="summary">
+    <title>{% block title %}{{ meta_title }}{% if page %} · 少惰主{% endif %}{% endblock %}</title>
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="alternate" type="application/rss+xml" title="少惰主文章" href="/feeds/articles.xml">
+    <link rel="alternate" type="application/rss+xml" title="少惰主随记" href="/feeds/notes.xml">
+    <link rel="icon" href="{% static 'img/mark.svg' %}" type="image/svg+xml">
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    {% block structured_data %}
+      <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"少惰主 · SDZJOY","url":"{{ canonical_url|escapejs }}","inLanguage":"zh-CN"}</script>
+    {% endblock %}
+    {% block extra_head %}{% endblock %}
+    <script src="{% static 'js/site.js' %}" defer></script>
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="少惰主首页">
-        <span>少惰主</span>
-        <small>SDZJOY</small>
-      </a>
-    </header>
-    {% block content %}{% endblock %}
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    {% include "includes/site_header.html" %}
+
+    <div id="main-content" tabindex="-1">
+      {% block content %}{% endblock %}
+    </div>
+
+    {% include "includes/site_footer.html" %}
   </body>
 </html>

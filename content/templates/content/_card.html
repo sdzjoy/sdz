@@ -1,0 +1,15 @@
+<article class="content-card">
+  <div class="content-card__meta">
+    <p class="content-card__type">{{ type_label }}</p>
+    {% if item.published_on %}<time>{{ item.published_on|date:"Y.m.d" }}</time>{% endif %}
+    {% if item.noted_on %}<time>{{ item.noted_on|date:"Y.m.d" }}</time>{% endif %}
+    {% if item.launched_on %}<time>{{ item.launched_on|date:"Y.m.d" }}</time>{% endif %}
+    {% if item.started_on %}<time>{{ item.started_on|date:"Y.m.d" }}</time>{% endif %}
+  </div>
+  <h2><a href="{{ item.url }}">{{ item.title }}</a></h2>
+  {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+  <div class="content-card__foot">
+    {% if item.status %}<span class="status-badge">{{ item.get_status_display }}</span>{% endif %}
+    <span class="card-arrow" aria-hidden="true">↗</span>
+  </div>
+</article>

@@ -1,0 +1,37 @@
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="少惰主首页">
+      <span class="brand-mark" aria-hidden="true">少</span>
+      <span class="brand-name">少惰主<small>SDZJOY</small></span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-controls="site-navigation" aria-expanded="false">
+      <span aria-hidden="true">☰</span><span class="sr-only">打开导航</span>
+    </button>
+    <nav class="site-nav" id="site-navigation" aria-label="主导航">
+      {% for item in site_navigation %}
+        <a href="{{ item.url }}"{% if item.key == current_section %} aria-current="page"{% endif %}>{{ item.label }}</a>
+      {% endfor %}
+    </nav>
+
+    <div class="header-actions">
+      <details class="subsite-switcher">
+        <summary>站群</summary>
+        <div class="subsite-menu">
+          <a href="/" aria-current="page">主站</a>
+          {% for item in live_subsites %}
+            <a href="{{ item.url }}">{{ item.label }} <span aria-hidden="true">↗</span></a>
+          {% endfor %}
+        </div>
+      </details>
+      {% if request.user.is_authenticated %}
+        <a class="account-link" href="{% url 'account_center' %}">{{ request.user.display_name|default:request.user.email }}</a>
+      {% else %}
+        <a class="account-link" href="{% url 'account_login' %}">登录</a>
+      {% endif %}
+      <button class="theme-toggle" type="button" aria-label="切换明暗主题">
+        <span aria-hidden="true">◐</span><span class="theme-label">主题</span>
+      </button>
+    </div>
+  </div>
+</header>

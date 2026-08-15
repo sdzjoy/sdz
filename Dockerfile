@@ -22,6 +22,10 @@ RUN mkdir -p /app/media /app/staticfiles /app/var \
     && DJANGO_SECRET_KEY=build-only-not-for-runtime \
        DJANGO_ALLOWED_HOSTS=localhost \
        POSTGRES_PASSWORD=build-only-not-for-runtime \
+       MFA_ENCRYPTION_KEY=build-only-not-for-runtime \
+       IDP_OIDC_PRIVATE_KEY=build-only-not-for-runtime \
+       TURNSTILE_SITE_KEY=build-only-not-for-runtime \
+       TURNSTILE_SECRET_KEY=build-only-not-for-runtime \
        python manage.py collectstatic --noinput
 
 USER app

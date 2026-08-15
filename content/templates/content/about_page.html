@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}关于 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell detail-page">
+    <p class="eyebrow">ABOUT</p><h1 class="detail-title">{{ page.title }}</h1>
+    <p class="lede">{{ page.intro }}</p>
+    <div class="prose">{% include "content/_body.html" with body=page.body %}</div>
+  </main>
+{% endblock %}

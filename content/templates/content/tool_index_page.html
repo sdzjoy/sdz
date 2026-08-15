@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}工具 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell listing-page">
+    <p class="eyebrow">TOOLS</p><h1 class="section-title">工具</h1>
+    {% if page.intro %}<p class="lede">{{ page.intro }}</p>{% endif %}
+    <div class="card-grid">
+      {% for item in tools %}{% include "content/_card.html" with item=item type_label="工具" %}{% empty %}<p>工具内容正在整理。</p>{% endfor %}
+    </div>
+  </main>
+{% endblock %}

@@ -1,0 +1,9 @@
+你好，{{ user.display_name|default:user.email }}：
+
+请打开下面的链接确认邮箱并启用 L1 普通会员权限：
+
+{{ activate_url }}
+
+链接将在 24 小时后失效。如果不是你发起的注册，请忽略这封邮件。
+
+少惰主 · SDZJOY

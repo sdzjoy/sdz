@@ -4,11 +4,11 @@ from accounts.models import User
 
 
 @pytest.mark.django_db
-def test_regular_user_uses_normalized_email_and_l1_membership():
+def test_regular_user_uses_normalized_email_and_starts_pending():
     user = User.objects.create_user("Person@Example.COM", "a-safe-test-password")
 
     assert user.email == "person@example.com"
-    assert user.membership_level == User.MembershipLevel.MEMBER
+    assert user.membership_level == User.MembershipLevel.PENDING
     assert user.check_password("a-safe-test-password")
     assert not user.is_staff
 

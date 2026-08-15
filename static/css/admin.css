@@ -1,0 +1,11 @@
+:root {
+  --w-color-primary: #087e72;
+  --w-color-primary-200: #52d5c3;
+}
+
+.w-header__title::after {
+  content: " · SDZJOY 工作台";
+  color: var(--w-color-text-label-menus-default);
+  font-size: 0.7em;
+  font-weight: 500;
+}

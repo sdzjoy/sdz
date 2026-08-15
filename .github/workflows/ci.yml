@@ -30,3 +30,11 @@ jobs:
         run: python manage.py makemigrations --check --dry-run --settings=config.settings.test
       - name: Test
         run: python -m pytest
+      - name: Validate Compose configuration
+        env:
+          DJANGO_SECRET_KEY: ci-compose-secret
+          MFA_ENCRYPTION_KEY: ci-compose-mfa-key
+          POSTGRES_PASSWORD: ci-compose-database-password
+        run: docker compose config --quiet
+      - name: Build application image
+        run: docker build --tag sdzjoy-platform:ci .

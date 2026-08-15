@@ -16,13 +16,18 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        extra_fields.setdefault("membership_level", "L1")
+        extra_fields.setdefault("membership_level", "L0")
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("membership_level", "L3")
+
+        if "email_verified_at" not in extra_fields:
+            from django.utils import timezone
+
+            extra_fields["email_verified_at"] = timezone.now()
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("超级用户必须设置 is_staff=True")

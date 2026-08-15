@@ -14,3 +14,4 @@ if os.getenv("POSTGRES_HOST"):
     }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = True

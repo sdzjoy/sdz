@@ -1,0 +1,20 @@
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <a class="brand brand--footer" href="/">
+        <span class="brand-mark" aria-hidden="true">少</span>
+        <span class="brand-name">少惰主<small>SDZJOY</small></span>
+      </a>
+      <p>工程、系统与数字生活中的真实实践。</p>
+    </div>
+    <nav aria-label="页脚导航">
+      {% for item in site_navigation %}<a href="{{ item.url }}">{{ item.label }}</a>{% endfor %}
+    </nav>
+    <div class="footer-feeds">
+      <a href="/feeds/articles.xml">文章 RSS</a>
+      <a href="/feeds/notes.xml">随记 RSS</a>
+      <a href="https://hvac.sdzjoy.com/">暖通参数库 <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+  <p class="footer-meta">© {% now "Y" %} 少惰主 · A SDZJOY Project</p>
+</footer>

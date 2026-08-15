@@ -1,0 +1,10 @@
+{% load wagtailimages_tags %}
+{% image value width-1200 as rendition %}
+<figure class="content-image">
+  <img src="{{ rendition.url }}"
+       width="{{ rendition.width }}"
+       height="{{ rendition.height }}"
+       alt="{{ value.description|default:value.title }}"
+       loading="lazy">
+  {% if value.description %}<figcaption>{{ value.description }}</figcaption>{% endif %}
+</figure>

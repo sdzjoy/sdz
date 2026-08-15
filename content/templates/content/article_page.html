@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ page.seo_title|default:page.title }} · 少惰主{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block structured_data %}
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"{{ page.title|escapejs }}","description":"{{ page.summary|escapejs }}","datePublished":"{{ page.published_on|date:'c' }}","author":{"@type":"Person","name":"少惰主"},"url":"{{ canonical_url|escapejs }}","inLanguage":"zh-CN"}</script>
+{% endblock %}
+{% block content %}
+  <main class="shell detail-page article-page">
+    <p class="eyebrow">ARTICLE · {{ page.published_on }} · {{ page.reading_minutes }} MIN</p>
+    <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
+    {% if page.project %}<p>所属项目：<a href="{{ page.project.url }}">{{ page.project.title }}</a></p>{% endif %}
+    <div class="prose reading-surface">{% include "content/_body.html" with body=page.body %}</div>
+  </main>
+{% endblock %}

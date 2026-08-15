@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}文章 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell listing-page">
+    <p class="eyebrow">ARTICLES</p><h1 class="section-title">文章</h1>
+    {% if page.intro %}<p class="lede">{{ page.intro }}</p>{% endif %}
+    <div class="card-grid">
+      {% for item in articles %}{% include "content/_card.html" with item=item type_label="文章" %}{% empty %}<p>文章内容正在整理。</p>{% endfor %}
+    </div>
+  </main>
+{% endblock %}
