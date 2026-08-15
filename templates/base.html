@@ -1,0 +1,20 @@
+{% load static wagtailcore_tags %}
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <title>{% block title %}少惰主 · SDZJOY{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="少惰主首页">
+        <span>少惰主</span>
+        <small>SDZJOY</small>
+      </a>
+    </header>
+    {% block content %}{% endblock %}
+  </body>
+</html>

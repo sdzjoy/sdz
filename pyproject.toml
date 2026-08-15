@@ -1,0 +1,28 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "tests.py"]
+testpaths = ["tests", "accounts", "core", "content", "standards", "resources", "notifications"]
+addopts = "--strict-markers --disable-warnings --cov=. --cov-report=term-missing:skip-covered --cov-fail-under=20"
+
+[tool.coverage.run]
+branch = true
+omit = [
+  "*/migrations/*",
+  "*/tests/*",
+  "manage.py",
+  "config/asgi.py",
+  "config/wsgi.py",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"config/settings/*.py" = ["F403", "F405"]
+"tests/*.py" = ["S101"]
