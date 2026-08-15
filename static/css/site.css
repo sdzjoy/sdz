@@ -71,6 +71,19 @@ h1 {
   line-height: 1.6;
 }
 
+.error-page {
+  min-height: calc(100vh - 96px);
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+
+.text-link {
+  color: var(--accent);
+  font-weight: 650;
+  text-underline-offset: 0.3em;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
