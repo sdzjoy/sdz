@@ -1,4 +1,4 @@
-import type { Editor, JSONContent } from '@tiptap/core'
+import type { JSONContent } from '@tiptap/core'
 
 import {
   AutosaveController,
@@ -13,6 +13,9 @@ import {
   insertUploadedImage,
   uploadImageFile,
 } from './extensions/image'
+import { createPasteCleanupExtension } from './paste'
+import { defaultSlashCommands, setupSlashMenu } from './slash-menu'
+import { createToolbarExtensions, setupToolbar } from './toolbar'
 
 interface ArticleConfig {
   schemaVersion: number
@@ -76,24 +79,6 @@ function restoreDraft(config: ArticleConfig, storageKey: string): ArticleDraft |
   return window.confirm(`发现 ${when} 保存在本机但尚未上传的草稿，是否恢复？`) ? stored.draft : null
 }
 
-function setupToolbar(root: HTMLElement, editor: Editor): void {
-  const commands: Record<string, () => void> = {
-    paragraph: () => editor.chain().focus().setParagraph().run(),
-    'heading-2': () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-    'heading-3': () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-    bold: () => editor.chain().focus().toggleBold().run(),
-    italic: () => editor.chain().focus().toggleItalic().run(),
-    'bullet-list': () => editor.chain().focus().toggleBulletList().run(),
-    'ordered-list': () => editor.chain().focus().toggleOrderedList().run(),
-    blockquote: () => editor.chain().focus().toggleBlockquote().run(),
-    undo: () => editor.chain().focus().undo().run(),
-    redo: () => editor.chain().focus().redo().run(),
-  }
-  root.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => {
-    button.addEventListener('click', () => commands[button.dataset.command || '']?.())
-  })
-}
-
 function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): void {
   const config = { ...initialConfig }
   let body = config.body
@@ -115,6 +100,7 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
   const publishButton = requiredElement<HTMLButtonElement>(root, '[data-publish]')
   const imageButton = requiredElement<HTMLButtonElement>(root, '[data-upload-image]')
   const imageInput = requiredElement<HTMLInputElement>(root, '[data-image-input]')
+  const floatingToolbar = requiredElement<HTMLElement>(root, '[data-floating-toolbar]')
 
   if (restored) {
     title.value = restored.title
@@ -138,10 +124,18 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
       saveState.textContent = message
     },
   })
+  const editorExtensions = [
+    ...imageExtensions,
+    ...createToolbarExtensions(floatingToolbar),
+    createPasteCleanupExtension((message) => {
+      saveState.dataset.state = 'dirty'
+      saveState.textContent = message
+    }),
+  ]
   const editor = createStudioEditor({
     element: requiredElement<HTMLElement>(root, '[data-editor-surface]'),
     content: body,
-    extensions: imageExtensions,
+    extensions: editorExtensions,
     onChange: (document) => {
       body = document
       controller.markDirty()
@@ -218,6 +212,13 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
     input.addEventListener('change', () => controller.markDirty())
   })
   setupToolbar(root, editor)
+  const slashMenu = setupSlashMenu(
+    root,
+    editor,
+    defaultSlashCommands({ onImage: () => imageInput.click() }),
+  )
+  requiredElement<HTMLButtonElement>(root, '[data-open-slash]')
+    .addEventListener('click', slashMenu.open)
   imageButton.addEventListener('click', () => imageInput.click())
   imageInput.addEventListener('change', () => {
     const file = imageInput.files?.[0]

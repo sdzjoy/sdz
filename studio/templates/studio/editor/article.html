@@ -34,12 +34,25 @@
         <span aria-hidden="true"></span>
         <button type="button" data-command="bold"><strong>B</strong></button>
         <button type="button" data-command="italic"><em>I</em></button>
+        <button type="button" data-command="strike"><s>S</s></button>
+        <button type="button" data-command="link">链接</button>
         <button type="button" data-command="bullet-list">项目符号</button>
         <button type="button" data-command="ordered-list">编号</button>
         <button type="button" data-command="blockquote">引用</button>
+        <button type="button" data-command="code-block">代码</button>
+        <button type="button" data-command="table">表格</button>
+        <button type="button" data-command="divider">分隔线</button>
         <button type="button" data-upload-image>图片</button><input type="file" data-image-input accept="image/jpeg,image/png,image/webp" hidden>
+        <button type="button" data-open-slash aria-label="打开更多插入菜单">更多 /</button>
         <button type="button" data-command="undo">撤销</button>
         <button type="button" data-command="redo">重做</button>
+      </div>
+      <div class="article-floating-toolbar" data-floating-toolbar style="visibility: hidden; position: absolute">
+        <button type="button" data-command="bold"><strong>B</strong></button>
+        <button type="button" data-command="italic"><em>I</em></button>
+        <button type="button" data-command="strike"><s>S</s></button>
+        <button type="button" data-command="link">链接</button>
+        <button type="button" data-command="clear">清除格式</button>
       </div>
       <div class="article-editor-surface" data-editor-surface></div>
 
