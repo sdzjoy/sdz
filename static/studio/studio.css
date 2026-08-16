@@ -255,6 +255,13 @@ button, input, select, textarea { font: inherit; }
 .content-parameter-card .parameter-note { grid-column: 1 / -1; color: var(--studio-muted); font-size: .88rem; font-weight: 400; }
 .content-cloud-resource ul { margin: 10px 0; }
 .content-cloud-resource li { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.studio-revision-table { overflow: hidden; border: 1px solid var(--studio-line); border-radius: 14px; background: rgba(251,250,246,.72); }
+.studio-revision-row { display: grid; grid-template-columns: 160px minmax(130px, .8fr) minmax(130px, .7fr) minmax(220px, 1.6fr) 130px; gap: 18px; align-items: center; padding: 16px 18px; border-top: 1px solid var(--studio-line); font-size: .86rem; }
+.studio-revision-row:first-child { border-top: 0; }
+.studio-revision-row-head { color: var(--studio-muted); background: rgba(233,226,214,.55); font-size: .72rem; font-weight: 800; letter-spacing: .05em; }
+.studio-revision-row time, .studio-revision-row span:nth-child(2) { color: var(--studio-muted); }
+.article-preview-bar form { margin: 0; }
+.article-preview-bar .studio-button { min-height: 36px; padding-inline: 14px; border: 0; }
 
 @media (max-width: 700px) {
   .article-editor-topbar { grid-template-columns: auto 1fr; }
@@ -265,4 +272,6 @@ button, input, select, textarea { font: inherit; }
   .article-basic-toolbar { top: 100px; }
   .article-preview-bar span { display: none; }
   .article-preview-sheet { margin-top: 28px; border: 0; }
+  .studio-revision-row { grid-template-columns: 1fr; gap: 7px; }
+  .studio-revision-row-head { display: none; }
 }

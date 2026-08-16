@@ -11,6 +11,7 @@ class AuditEvent(models.Model):
         PERMANENT_DELETE = "permanent_delete", "永久删除"
         MANUAL_SAVE = "manual_save", "手工保存"
         PUBLISH = "publish", "发布内容"
+        RESTORE_REVISION = "restore_revision", "恢复历史版本"
         ASSET_UPLOAD = "asset_upload", "上传素材"
         ASSET_DELETE = "asset_delete", "删除素材"
 

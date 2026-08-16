@@ -13,6 +13,7 @@
       <a href="{% url 'studio:content_list' %}" class="article-editor-back" aria-label="返回文章列表">← <span>文章列表</span></a>
       <div class="article-save-state" data-save-state data-state="saved">{% if article %}草稿 · 已保存{% else %}新文章 · 尚未保存{% endif %}</div>
       <div class="article-editor-actions">
+        {% if article %}<a class="studio-button" href="{% url 'studio:revision_list' article.pk %}">版本</a>{% endif %}
         <button type="button" class="studio-button" data-preview>预览</button>
         <button type="button" class="studio-button" data-save>保存</button>
         <button type="button" class="studio-button studio-button-primary" data-publish>发布</button>

@@ -17,6 +17,7 @@ from .views.content import (
 )
 from .views.dashboard import dashboard, placeholder
 from .views.editor import article_create, article_edit, article_preview
+from .views.revisions import restore_content_revision, revision_list, revision_preview
 
 app_name = "studio"
 
@@ -33,6 +34,21 @@ urlpatterns = [
         "content/<int:pk>/delete-permanently/",
         permanently_delete_content,
         name="content_permanent_delete",
+    ),
+    path(
+        "content/<int:pk>/revisions/",
+        revision_list,
+        name="revision_list",
+    ),
+    path(
+        "content/<int:pk>/revisions/<int:revision_pk>/",
+        revision_preview,
+        name="revision_preview",
+    ),
+    path(
+        "content/<int:pk>/revisions/<int:revision_pk>/restore/",
+        restore_content_revision,
+        name="revision_restore",
     ),
     path(
         "content/articles/new/",

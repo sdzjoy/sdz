@@ -14,6 +14,7 @@
         <details><summary>永久删除</summary><div class="studio-danger-popover"><p>只有进入回收站满 30 天后才能删除。</p><input form="delete-{{ item.pk }}" name="reason" maxlength="500" minlength="5" placeholder="填写删除原因" required><button form="delete-{{ item.pk }}" type="submit">确认永久删除</button></div></details>
       {% endif %}
     {% else %}
+      <a href="{% url 'studio:revision_list' item.pk %}">版本</a>
       {% if item.status == 'published' %}<a href="{{ item.get_absolute_url }}" target="_blank" rel="noopener">查看</a>{% else %}<span>草稿</span>{% endif %}
     {% endif %}
   </div>

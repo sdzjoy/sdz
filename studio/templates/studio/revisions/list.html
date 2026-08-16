@@ -1,0 +1,35 @@
+{% extends "studio/base.html" %}
+
+{% block title %}版本历史：{{ content_item.title }} · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header studio-revision-header">
+    <div>
+      <p class="studio-eyebrow">版本历史</p>
+      <h1>{{ content_item.title }}</h1>
+      <p>自动保存不会堆积版本；手工保存、发布、恢复、取消发布和删除前会留下可追溯快照。</p>
+    </div>
+    {% if content_item.kind == 'article' %}<a class="studio-button" href="{% url 'studio:article_edit' content_item.pk %}">返回编辑</a>{% else %}<a class="studio-button" href="{% url 'studio:content_list' %}">返回内容</a>{% endif %}
+  </header>
+
+  <div class="studio-revision-table" role="table" aria-label="版本历史">
+    <div class="studio-revision-row studio-revision-row-head" role="row">
+      <span role="columnheader">时间</span>
+      <span role="columnheader">操作者</span>
+      <span role="columnheader">动作</span>
+      <span role="columnheader">修改摘要</span>
+      <span role="columnheader">操作</span>
+    </div>
+    {% for revision in revisions %}
+      <article class="studio-revision-row" role="row">
+        <time role="cell" datetime="{{ revision.created_at|date:'c' }}">{{ revision.created_at|date:"Y-m-d H:i:s" }}</time>
+        <span role="cell">{% if revision.created_by %}{{ revision.created_by.display_name|default:revision.created_by.email }}{% else %}系统{% endif %}</span>
+        <span role="cell">{{ revision.get_action_display }}</span>
+        <span role="cell">{{ revision.summary|default:"未填写修改摘要" }}</span>
+        <span class="studio-row-actions" role="cell"><a href="{% url 'studio:revision_preview' content_item.pk revision.pk %}">预览版本 {{ revision.number }}</a></span>
+      </article>
+    {% empty %}
+      <div class="studio-list-empty"><strong>还没有历史版本</strong><p>手工保存或发布后，版本会出现在这里。</p></div>
+    {% endfor %}
+  </div>
+{% endblock %}
