@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import pytest
 from django.contrib.staticfiles import finders
@@ -36,9 +37,15 @@ def test_homepage_has_honest_empty_state_and_accessible_site_shell(client):
 
 def test_brand_assets_are_discoverable():
     assert finders.find("css/site.css")
-    assert finders.find("css/editorial.css")
+    editorial_path = finders.find("css/editorial.css")
+    assert editorial_path
     assert finders.find("js/site.js")
     assert finders.find("img/mark.svg")
+
+    editorial_css = Path(editorial_path).read_text(encoding="utf-8")
+    assert "--type-display" in editorial_css
+    assert "--type-body" in editorial_css
+    assert 'font-family: var(--font-sans);' in editorial_css
 
 
 def test_homepage_only_surfaces_published_content(client):
