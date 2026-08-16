@@ -1,3 +1,17 @@
+FROM node:22-bookworm-slim AS frontend-build
+
+WORKDIR /app/frontend
+
+RUN corepack enable \
+    && corepack prepare pnpm@11.19.0 --activate
+
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY frontend/ ./
+RUN pnpm build
+
+
 FROM python:3.12-slim-bookworm AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -16,6 +30,7 @@ RUN python -m pip install --upgrade pip \
     && python -m pip install --requirement /tmp/requirements.txt
 
 COPY --chown=app:app . /app
+COPY --from=frontend-build --chown=app:app /app/static/studio/dist /app/static/studio/dist
 
 RUN mkdir -p /app/media /app/staticfiles /app/var \
     && chown -R app:app /app/media /app/staticfiles /app/var \

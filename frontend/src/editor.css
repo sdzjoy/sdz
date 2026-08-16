@@ -1,0 +1,37 @@
+.studio-editor {
+  min-height: 28rem;
+  color: #181815;
+  font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  outline: none;
+}
+
+.studio-editor > * + * {
+  margin-top: 1rem;
+}
+
+.studio-editor h2,
+.studio-editor h3 {
+  font-family: "Noto Sans SC", "Source Han Sans SC", sans-serif;
+  line-height: 1.35;
+}
+
+.studio-editor blockquote {
+  margin-left: 0;
+  border-left: 3px solid #c8623a;
+  padding-left: 1rem;
+  color: #5b5850;
+}
+
+.studio-editor table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.studio-editor th,
+.studio-editor td {
+  border: 1px solid #d7d1c4;
+  padding: 0.55rem 0.7rem;
+  vertical-align: top;
+}

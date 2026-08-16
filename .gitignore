@@ -11,6 +11,8 @@ htmlcov/
 media/*
 !media/.gitkeep
 staticfiles/
+frontend/node_modules/
+static/studio/dist/
 var/*
 !var/.gitkeep
 .deployment-state/
