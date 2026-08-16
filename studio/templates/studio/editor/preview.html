@@ -1,0 +1,15 @@
+{% extends "studio/base.html" %}
+
+{% block title %}预览：{{ article.title }}{% endblock %}
+{% block body_class %} studio-preview-body{% endblock %}
+
+{% block content %}
+  <header class="article-preview-bar"><a href="{% url 'studio:article_edit' article.pk %}">← 返回编辑</a><span>这是草稿预览，访客看不到</span></header>
+  <article class="article-preview-sheet">
+    <p class="studio-eyebrow">文章预览</p>
+    <h1>{{ article.title }}</h1>
+    {% if article.summary %}<p class="article-preview-summary">{{ article.summary }}</p>{% endif %}
+    <div class="article-preview-meta"><time>{{ article.published_on|date:"Y年m月d日" }}</time><span>{{ article.effective_reading_minutes }} 分钟</span>{% for topic in article.topics.all %}<span>{{ topic.name }}</span>{% endfor %}</div>
+    <div class="article-preview-body">{{ article.rendered_html|safe }}</div>
+  </article>
+{% endblock %}

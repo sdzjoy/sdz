@@ -18,6 +18,7 @@ from publishing.models import (
 from publishing.services import (
     ContentConflict,
     ContentStateError,
+    autosave_draft,
     move_to_trash,
     publish_content,
     restore_from_trash,
@@ -127,6 +128,23 @@ def test_manual_save_creates_revision_and_updates_topics(owner, article):
     assert revision.number == 1
     assert revision.action == ContentRevision.Action.SAVE
     assert revision.snapshot["common"]["body_json"] == body("原始正文")
+
+
+def test_autosave_updates_draft_without_creating_revision(owner, article):
+    updated = autosave_draft(
+        article,
+        expected_version=0,
+        title=article.title,
+        slug=article.slug,
+        summary=article.summary,
+        body_json=body("自动保存正文"),
+        extra_fields={"reading_minutes": 6},
+    )
+
+    assert updated.version == 1
+    assert updated.body_text == "自动保存正文"
+    assert updated.reading_minutes == 6
+    assert updated.revisions.count() == 0
 
 
 def test_publish_copies_an_immutable_public_snapshot(owner, article):

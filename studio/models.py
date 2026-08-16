@@ -9,6 +9,8 @@ class AuditEvent(models.Model):
         MOVE_TO_TRASH = "move_to_trash", "移入回收站"
         RESTORE_FROM_TRASH = "restore_from_trash", "移出回收站"
         PERMANENT_DELETE = "permanent_delete", "永久删除"
+        MANUAL_SAVE = "manual_save", "手工保存"
+        PUBLISH = "publish", "发布内容"
 
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,

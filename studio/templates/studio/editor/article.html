@@ -1,0 +1,58 @@
+{% extends "studio/base.html" %}
+{% load studio_assets %}
+
+{% block title %}{% if article %}{{ article.title }}{% else %}写文章{% endif %} · 少惰主后台{% endblock %}
+{% block body_class %} studio-editor-body{% endblock %}
+{% block extra_head %}{% studio_vite_assets %}{% endblock %}
+
+{% block content %}
+  <form id="studio-csrf-form" hidden>{% csrf_token %}</form>
+  {{ editor_config|json_script:"article-editor-config" }}
+  <div class="article-editor-app" data-article-editor>
+    <header class="article-editor-topbar">
+      <a href="{% url 'studio:content_list' %}" class="article-editor-back" aria-label="返回文章列表">← <span>文章列表</span></a>
+      <div class="article-save-state" data-save-state data-state="saved">{% if article %}草稿 · 已保存{% else %}新文章 · 尚未保存{% endif %}</div>
+      <div class="article-editor-actions">
+        <button type="button" class="studio-button" data-preview>预览</button>
+        <button type="button" class="studio-button" data-save>保存</button>
+        <button type="button" class="studio-button studio-button-primary" data-publish>发布</button>
+      </div>
+    </header>
+
+    <div class="article-editor-canvas">
+      <p class="article-editor-kicker">像写公众号一样，专心写正文</p>
+      <input class="article-title-input" data-article-title maxlength="200" value="{% if article %}{{ article.title }}{% endif %}" placeholder="文章标题" aria-label="文章标题">
+      <details class="article-summary-box"{% if article.summary %} open{% endif %}>
+        <summary>修改摘要 <span>不填写时将从正文自动生成</span></summary>
+        <textarea data-article-summary maxlength="500" rows="3" placeholder="文章摘要">{% if article %}{{ article.summary }}{% endif %}</textarea>
+      </details>
+
+      <div class="article-basic-toolbar" role="toolbar" aria-label="正文格式">
+        <button type="button" data-command="paragraph">正文</button>
+        <button type="button" data-command="heading-2">二级标题</button>
+        <button type="button" data-command="heading-3">三级标题</button>
+        <span aria-hidden="true"></span>
+        <button type="button" data-command="bold"><strong>B</strong></button>
+        <button type="button" data-command="italic"><em>I</em></button>
+        <button type="button" data-command="bullet-list">项目符号</button>
+        <button type="button" data-command="ordered-list">编号</button>
+        <button type="button" data-command="blockquote">引用</button>
+        <button type="button" data-command="undo">撤销</button>
+        <button type="button" data-command="redo">重做</button>
+      </div>
+      <div class="article-editor-surface" data-editor-surface></div>
+
+      <details class="article-settings-drawer">
+        <summary>文章设置 <span>封面、主题、日期和网址</span></summary>
+        <div class="article-settings-grid">
+          <label>网址标识<input data-article-slug maxlength="160" value="{% if article %}{{ article.slug }}{% endif %}" placeholder="留空时根据标题生成"></label>
+          <label>文章日期<input type="date" data-published-on value="{% if article %}{{ article.published_on|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}"></label>
+          <label>所属项目<select data-parent-project><option value="">不属于项目</option>{% for project in projects %}<option value="{{ project.pk }}"{% if article.parent_project_id == project.pk %} selected{% endif %}>{{ project.title }}</option>{% endfor %}</select></label>
+          <label>阅读分钟<input type="number" min="1" max="1440" data-reading-minutes value="{% if article.reading_minutes %}{{ article.reading_minutes }}{% endif %}" placeholder="自动估算"></label>
+          <label class="article-featured-setting"><input type="checkbox" data-featured{% if article.featured %} checked{% endif %}> 首页推荐</label>
+          <fieldset><legend>主题</legend><div class="article-topic-choices">{% for topic in topics %}<label><input type="checkbox" data-topic value="{{ topic.pk }}"{% if topic.pk in selected_topic_ids %} checked{% endif %}> {{ topic.name }}</label>{% empty %}<span>还没有主题，可稍后添加。</span>{% endfor %}</div></fieldset>
+        </div>
+      </details>
+    </div>
+  </div>
+{% endblock %}

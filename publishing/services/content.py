@@ -7,6 +7,18 @@ from publishing.models import ContentEntry, ContentRevision
 from .revisions import apply_snapshot, create_revision, snapshot_content
 
 _UNSET = object()
+TYPE_DRAFT_FIELDS = {
+    ContentEntry.Kind.ARTICLE: {"published_on", "reading_minutes", "parent_project_id"},
+    ContentEntry.Kind.PROJECT: {"project_status", "started_on", "completed_on"},
+    ContentEntry.Kind.NOTE: {"noted_on", "parent_project_id", "promoted_article_id"},
+    ContentEntry.Kind.TOOL: {
+        "launched_on",
+        "tool_status",
+        "service_url",
+        "source_url",
+        "parent_project_id",
+    },
+}
 
 
 class ContentConflict(RuntimeError):
@@ -35,6 +47,75 @@ def _reload(content: ContentEntry):
     return type(content).objects.get(pk=content.pk)
 
 
+def _apply_draft_changes(
+    locked,
+    *,
+    title: str,
+    slug: str,
+    summary: str,
+    validated_body,
+    featured: bool | None = None,
+    cover_asset=_UNSET,
+    topic_ids=None,
+    extra_fields=None,
+):
+    locked.title = title
+    locked.slug = slug
+    locked.summary = summary
+    locked.body_json = validated_body.as_dict()
+    if featured is not None:
+        locked.featured = featured
+    if cover_asset is not _UNSET:
+        locked.cover_asset = cover_asset
+    extra_fields = extra_fields or {}
+    unexpected = set(extra_fields) - TYPE_DRAFT_FIELDS.get(locked.kind, set())
+    if unexpected:
+        raise ValueError(f"内容类型不支持字段：{', '.join(sorted(unexpected))}")
+    for field, value in extra_fields.items():
+        setattr(locked, field, value)
+    locked.version += 1
+    updated_fields = {"title", "slug", "summary", "body_json", "version", "updated_at"}
+    if featured is not None:
+        updated_fields.add("featured")
+    if cover_asset is not _UNSET:
+        updated_fields.add("cover_asset")
+    updated_fields.update(extra_fields)
+    locked.save(update_fields=updated_fields)
+    if topic_ids is not None:
+        locked.topics.set(topic_ids)
+    return _reload(locked)
+
+
+@transaction.atomic
+def autosave_draft(
+    content,
+    *,
+    expected_version: int,
+    title: str,
+    slug: str,
+    summary: str,
+    body_json,
+    featured: bool | None = None,
+    cover_asset=_UNSET,
+    topic_ids=None,
+    extra_fields=None,
+):
+    locked = _locked_typed_content(content)
+    _check_editable(locked, expected_version)
+    validated = validate_document(body_json)
+    return _apply_draft_changes(
+        locked,
+        title=title,
+        slug=slug,
+        summary=summary,
+        validated_body=validated,
+        featured=featured,
+        cover_asset=cover_asset,
+        topic_ids=topic_ids,
+        extra_fields=extra_fields,
+    )
+
+
 @transaction.atomic
 def save_draft(
     content,
@@ -48,6 +129,7 @@ def save_draft(
     featured: bool | None = None,
     cover_asset=_UNSET,
     topic_ids=None,
+    extra_fields=None,
     revision_summary: str = "",
 ):
     locked = _locked_typed_content(content)
@@ -59,25 +141,17 @@ def save_draft(
         actor=actor,
         summary=revision_summary,
     )
-
-    locked.title = title
-    locked.slug = slug
-    locked.summary = summary
-    locked.body_json = validated.as_dict()
-    if featured is not None:
-        locked.featured = featured
-    if cover_asset is not _UNSET:
-        locked.cover_asset = cover_asset
-    locked.version += 1
-    updated_fields = {"title", "slug", "summary", "body_json", "version", "updated_at"}
-    if featured is not None:
-        updated_fields.add("featured")
-    if cover_asset is not _UNSET:
-        updated_fields.add("cover_asset")
-    locked.save(update_fields=updated_fields)
-    if topic_ids is not None:
-        locked.topics.set(topic_ids)
-    return _reload(locked)
+    return _apply_draft_changes(
+        locked,
+        title=title,
+        slug=slug,
+        summary=summary,
+        validated_body=validated,
+        featured=featured,
+        cover_asset=cover_asset,
+        topic_ids=topic_ids,
+        extra_fields=extra_fields,
+    )
 
 
 @transaction.atomic

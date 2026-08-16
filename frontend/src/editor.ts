@@ -25,6 +25,9 @@ export function createStudioEditor({
     editable,
     extensions: [
       StarterKit.configure({
+        heading: {
+          levels: [2, 3],
+        },
         link: {
           openOnClick: false,
           autolink: true,

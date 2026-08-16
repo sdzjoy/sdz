@@ -7,6 +7,7 @@ export default defineConfig({
     outDir: '../static/studio/dist',
     rollupOptions: {
       input: {
+        articleEditor: 'src/article-editor.ts',
         editor: 'src/editor.ts',
       },
     },
