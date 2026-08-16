@@ -29,10 +29,14 @@ def test_homepage_has_honest_empty_state_and_accessible_site_shell(client):
     assert 'aria-label="主导航"' in document
     assert 'class="theme-toggle"' in document
     assert 'href="https://hvac.sdzjoy.com/"' in document
+    assert "研究工程" in document
+    assert "少惰主从" in document
+    assert 'href="/static/css/editorial.css"' in document
 
 
 def test_brand_assets_are_discoverable():
     assert finders.find("css/site.css")
+    assert finders.find("css/editorial.css")
     assert finders.find("js/site.js")
     assert finders.find("img/mark.svg")
 

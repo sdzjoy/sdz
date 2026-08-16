@@ -6,8 +6,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark light">
-    <meta name="theme-color" content="#071419">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#faf9f5">
     <meta name="description" content="{{ meta_description }}">
     {% block robots %}<meta name="robots" content="index,follow,max-image-preview:large">{% endblock %}
     <meta property="og:locale" content="zh_CN">
@@ -23,6 +23,7 @@
     <link rel="alternate" type="application/rss+xml" title="少惰主随记" href="/feeds/notes.xml">
     <link rel="icon" href="{% static 'img/mark.svg' %}" type="image/svg+xml">
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editorial.css' %}">
     {% block structured_data %}
       <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"少惰主 · SDZJOY","url":"{{ canonical_url|escapejs }}","inLanguage":"zh-CN"}</script>
     {% endblock %}
