@@ -1,7 +1,6 @@
-{% load wagtailcore_tags %}
 <figure class="engineering-table">
   {% if value.title %}<figcaption>{{ value.title }}</figcaption>{% endif %}
-  <div class="engineering-table__scroll">{% include_block value.table %}</div>
+  <div class="engineering-table__scroll">{{ table_html }}</div>
   {% if value.units or value.source or value.notes %}
     <div class="engineering-table__notes">
       {% if value.units %}<p>单位：{{ value.units }}</p>{% endif %}

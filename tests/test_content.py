@@ -1,8 +1,11 @@
 from datetime import date
+from pathlib import Path
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models.deletion import ProtectedError
 from django.test import RequestFactory
+from wagtail.documents import get_document_model
 from wagtail.images import get_image_model
 
 from content.models import (
@@ -249,3 +252,165 @@ def test_article_cover_image_is_optional():
 
     assert ArticlePage._meta.get_field("cover_image").related_model is image_model
     assert ArticlePage._meta.get_field("cover_image").null is True
+
+
+def test_article_frontend_renders_professional_blocks_cover_and_bibliography(client):
+    image = get_image_model().objects.create(
+        title="冷却系统示意图",
+        file=SimpleUploadedFile(
+            "cooling.png",
+            (
+                b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+                b"\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+                b"\x00\x00\x00\rIDAT\x08\xd7c\xf8\xcf\xc0\xf0\x1f\x00\x05"
+                b"\x00\x01\xff\x89\x99=\x1d\x00\x00\x00\x00IEND\xaeB`\x82"
+            ),
+            content_type="image/png",
+        ),
+    )
+    document = get_document_model().objects.create(
+        title="调试记录",
+        file=SimpleUploadedFile(
+            "commissioning.txt", b"commissioning record", content_type="text/plain"
+        ),
+    )
+    reference = {
+        "kind": "standard",
+        "identifier": "GB 50736-2012",
+        "title_zh": "民用建筑供暖通风与空气调节设计规范",
+        "title_en": "Design code for heating ventilation and air conditioning",
+        "edition": "2012",
+        "clause": "4.1.1",
+        "pages": "附录 A",
+        "excerpt": "室外空气计算参数。",
+        "organization": "住房和城乡建设部",
+        "source_url": "https://example.com/gb50736",
+        "accessed_on": date(2026, 8, 16),
+        "editor_note": "不会出现在前台",
+    }
+    article, _ = publish(
+        section(ArticleIndexPage),
+        ArticlePage(
+            title="专业文章前台排版",
+            slug="professional-article-layout",
+            summary="覆盖公式、表格、参数、图片、附件和参考资料。",
+            published_on=date(2026, 8, 16),
+            cover_image=image,
+            body=[
+                ("section_heading", {"level": "h2", "text": "设计条件"}),
+                ("paragraph", "<p>正文包含 <strong>工程结论</strong>。</p>"),
+                (
+                    "callout",
+                    {"kind": "experience", "title": "工程经验", "content": "避免短路。"},
+                ),
+                (
+                    "equation",
+                    {
+                        "latex": r"Q = c_p m \Delta T",
+                        "number": "3-1",
+                        "caption": "冷量平衡式",
+                        "variables": [
+                            {"symbol": "Q", "meaning": "冷量", "unit": "kW"}
+                        ],
+                    },
+                ),
+                (
+                    "data_table",
+                    {
+                        "title": "设计参数表",
+                        "table": {
+                            "data": [["参数", "数值"], ["送风温度", "18 ℃"]],
+                            "first_row_is_table_header": True,
+                            "first_col_is_header": False,
+                        },
+                        "units": "温度为摄氏度",
+                        "source": "设计计算书",
+                        "notes": "校核工况。",
+                    },
+                ),
+                (
+                    "parameter_card",
+                    {
+                        "title": "关键参数",
+                        "items": [
+                            {"name": "送风温度", "value": "18", "unit": "℃", "note": ""}
+                        ],
+                    },
+                ),
+                (
+                    "captioned_image",
+                    {
+                        "image": image,
+                        "alt_text": "数据中心冷却系统示意",
+                        "caption": "图 1 冷却系统",
+                        "source": "少惰主",
+                        "width": "wide",
+                    },
+                ),
+                (
+                    "attachment",
+                    {
+                        "document": document,
+                        "display_name": "调试记录下载",
+                        "version": "V1.0",
+                        "description": "现场调试原始记录。",
+                    },
+                ),
+                ("reference", reference),
+                ("reference", {**reference, "clause": "4.1.2"}),
+            ],
+        ),
+    )
+
+    response = client.get(article.url)
+    body = response.content.decode()
+
+    assert response.status_code == 200
+    assert 'class="article-masthead"' in body
+    assert 'class="article-cover"' in body
+    assert 'class="article-reading-area"' in body
+    assert 'class="callout callout--experience"' in body
+    assert 'class="engineering-equation"' in body
+    assert 'class="engineering-table"' in body
+    assert "<table" in body
+    assert "{'data':" not in body
+    assert 'class="parameter-card"' in body
+    assert 'class="content-image content-image--wide"' in body
+    assert 'class="attachment-card"' in body
+    assert body.count('class="article-reference"') == 1
+    assert "4.1.1、4.1.2" in body
+    assert "编辑备注" not in body
+    assert "不会出现在前台" not in body
+
+
+def test_old_article_without_cover_or_professional_blocks_still_renders(client):
+    article, _ = publish(
+        section(ArticleIndexPage),
+        ArticlePage(
+            title="旧版文章继续可用",
+            slug="legacy-article-still-renders",
+            summary="没有封面和专业内容块。",
+            published_on=date(2026, 8, 1),
+            body=[("heading", "旧版标题"), ("markdown", "旧版 **正文**")],
+        ),
+    )
+
+    response = client.get(article.url)
+    body = response.content.decode()
+
+    assert response.status_code == 200
+    assert "旧版文章继续可用" in body
+    assert "旧版" in body
+    assert "正文" in body
+    assert 'class="article-cover"' not in body
+    assert 'class="article-references"' not in body
+
+
+def test_editorial_css_scopes_wide_equations_and_tables_to_local_scroll():
+    css = Path("static/css/editorial.css").read_text(encoding="utf-8")
+
+    assert ".engineering-equation__formula" in css
+    assert ".engineering-table__scroll" in css
+    assert "overflow-x: auto" in css
+    assert ".content-image--wide" in css
+    assert "@media (max-width: 680px)" in css

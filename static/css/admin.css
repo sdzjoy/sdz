@@ -211,6 +211,24 @@
   z-index: 40;
 }
 
+.editorial-paste-notice {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  color: var(--w-color-text-context, #262626);
+  border-inline-start: 3px solid var(--w-color-positive-100, #007d7e);
+  background: var(--w-color-surface-menus, #f6f6f6);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.editorial-paste-notice[data-state="warning"] {
+  border-inline-start-color: var(--w-color-warning-100, #d97706);
+}
+
+.editorial-paste-notice[hidden] {
+  display: none;
+}
+
 .editorial-save-status::before {
   background: var(--editorial-accent);
   border-radius: 50%;

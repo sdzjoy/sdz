@@ -4,6 +4,9 @@ from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.images.blocks import ImageChooserBlock
 
 RICH_TEXT_FEATURES = [
+    "h2",
+    "h3",
+    "h4",
     "bold",
     "italic",
     "code",
@@ -18,6 +21,9 @@ RICH_TEXT_FEATURES = [
 ]
 
 TABLE_OPTIONS = {
+    # Wagtail's bundled Handsontable 6 build registers only its default locale.
+    # Setting it explicitly avoids a console error when Django uses zh-hans.
+    "language": "en-US",
     "minSpareRows": 0,
     "startRows": 3,
     "startCols": 3,
@@ -169,6 +175,13 @@ class DataTableBlock(blocks.StructBlock):
         label = "数据表格"
         group = "工程资料"
         template = "content/blocks/data_table_block.html"
+
+    def get_context(self, value, parent_context=None):
+        context = super().get_context(value, parent_context=parent_context)
+        context["table_html"] = self.child_blocks["table"].render(
+            value.get("table"), context=context
+        )
+        return context
 
 
 class ParameterItemBlock(blocks.StructBlock):

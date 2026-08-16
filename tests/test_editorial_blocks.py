@@ -56,6 +56,13 @@ def test_professional_blocks_are_grouped_and_available():
     assert blocks["code"].meta.group == "技术内容"
 
 
+def test_table_blocks_use_the_bundled_handsontable_locale():
+    blocks = body_block_map()
+
+    assert blocks["data_table"].child_blocks["table"].table_options["language"] == "en-US"
+    assert blocks["table"].table_options["language"] == "en-US"
+
+
 def test_equation_block_renders_self_hosted_mathml_and_metadata():
     equation = body_block_map()["equation"]
     value = equation.to_python(

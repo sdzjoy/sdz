@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import pytest
 from allauth.mfa.models import Authenticator
@@ -239,4 +240,34 @@ def test_article_editor_loads_immersive_ui_and_formula_preview_assets(client):
     assert reverse("editorial_math_preview") in body
     assert "editorial-equation-block" in body
     assert "id_cover_image" in body
+    assert 'data-contentpath="body"' in body
     assert 'data-w-kbd-key-value="mod+s"' in body
+
+    script = Path("static/js/editorial-admin.js").read_text(encoding="utf-8")
+    assert 'form.querySelector(\'[data-contentpath="body"]\')' in script
+    assert 'document.querySelector("#id_body")' not in script
+
+
+def test_editorial_script_cleans_rich_paste_and_warns_about_external_images():
+    script = Path("static/js/editorial-admin.js").read_text(encoding="utf-8")
+
+    assert "ALLOWED_PASTE_TAGS" in script
+    assert "DOMParser" in script
+    assert "clipboardData" in script
+    assert "sanitizePastedHtml" in script
+    assert "replayPaste" in script
+    assert "外部图片未粘贴" in script
+    assert "请使用图片与图注块重新上传" in script
+    assert "javascript:" in script
+    assert "mso-hide" in script
+    assert "aria-live" in script
+    assert "hadTables" in script
+    assert "表格内容已保留为可编辑行" in script
+    assert 'setStatus("dirty", "有未保存修改")' in script
+    assert 'editor.dispatchEvent(new Event("input", { bubbles: true }))' in script
+
+
+def test_article_rich_text_supports_pasted_heading_structure():
+    paragraph = dict(ArticlePage.body.field.stream_block.child_blocks)["paragraph"]
+
+    assert {"h2", "h3", "h4"} <= set(paragraph.features)

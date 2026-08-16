@@ -7,29 +7,73 @@
 {% endblock %}
 {% block content %}
   <main class="shell detail-page article-page">
-    <p class="eyebrow">ARTICLE · {{ page.published_on }} · {{ page.effective_reading_minutes }} MIN</p>
-    <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
-    {% if page.cover_image %}
-      {% image page.cover_image width-1600 as cover %}
-      <figure class="article-cover"><img src="{{ cover.url }}" width="{{ cover.width }}" height="{{ cover.height }}" alt="{{ page.cover_image.description|default:page.title }}"></figure>
-    {% endif %}
-    {% item_actions "article" page.pk %}
-    {% if page.project %}<p>所属项目：<a href="{{ page.project.url }}">{{ page.project.title }}</a></p>{% endif %}
-    <div class="prose reading-surface">{% include "content/_body.html" with body=page.body %}</div>
-    {% if page.reference_entries %}
-      <section class="article-references" aria-labelledby="article-references-title">
-        <h2 id="article-references-title">参考资料</h2>
-        <ol>
-          {% for reference in page.reference_entries %}
-            <li>
-              {% if reference.identifier %}<strong>{{ reference.identifier }}</strong> · {% endif %}{{ reference.title_zh }}{% if reference.edition %}（{{ reference.edition }}）{% endif %}
-              {% if reference.clauses %}；条文 {{ reference.clauses|join:"、" }}{% endif %}
-              {% if reference.page_ranges %}；页码 {{ reference.page_ranges|join:"、" }}{% endif %}
-              {% if reference.source_url %}；<a href="{{ reference.source_url }}" rel="noopener noreferrer">来源</a>{% endif %}
-            </li>
-          {% endfor %}
-        </ol>
-      </section>
-    {% endif %}
+    <article>
+      <header class="article-masthead">
+        <div class="article-masthead__copy">
+          <p class="eyebrow">TECHNICAL ARTICLE · DATA CENTER HVAC</p>
+          <h1 class="detail-title">{{ page.title }}</h1>
+          <p class="lede">{{ page.summary }}</p>
+        </div>
+        <dl class="article-meta" aria-label="文章资料">
+          <div><dt>发布日期</dt><dd><time datetime="{{ page.published_on|date:'Y-m-d' }}">{{ page.published_on|date:"Y 年 n 月 j 日" }}</time></dd></div>
+          <div><dt>预计阅读</dt><dd>{{ page.effective_reading_minutes }} 分钟</dd></div>
+          {% if page.project %}<div><dt>所属项目</dt><dd><a href="{{ page.project.url }}">{{ page.project.title }}</a></dd></div>{% endif %}
+          {% if page.topics.all %}
+            <div class="article-meta__topics">
+              <dt>主题</dt>
+              <dd>{% for topic in page.topics.all %}<span>{{ topic.name }}</span>{% if not forloop.last %}<i aria-hidden="true"> / </i>{% endif %}{% endfor %}</dd>
+            </div>
+          {% endif %}
+        </dl>
+      </header>
+
+      {% item_actions "article" page.pk %}
+
+      {% if page.cover_image %}
+        {% image page.cover_image width-1600 as cover %}
+        <figure class="article-cover">
+          <img src="{{ cover.url }}"
+               width="{{ cover.width }}"
+               height="{{ cover.height }}"
+               alt="{{ page.cover_image.description|default:page.title }}"
+               fetchpriority="high">
+        </figure>
+      {% endif %}
+
+      <div class="article-reading-area">
+        <div class="prose reading-surface">{% include "content/_body.html" with body=page.body %}</div>
+      </div>
+
+      {% with references=page.reference_entries %}
+        {% if references %}
+          <section class="article-references" aria-labelledby="article-references-title">
+            <header>
+              <p class="eyebrow">SOURCES &amp; REFERENCES</p>
+              <h2 id="article-references-title">参考资料</h2>
+              <p>正文引用按资料与版本合并，条文和页码保留原始引用位置。</p>
+            </header>
+            <ol>
+              {% for reference in references %}
+                <li class="article-reference">
+                  <span class="article-reference__number" aria-hidden="true">[{{ forloop.counter }}]</span>
+                  <div>
+                    <p class="article-reference__title">{% if reference.identifier %}<strong>{{ reference.identifier }}</strong> · {% endif %}{{ reference.title_zh }}{% if reference.edition %}（{{ reference.edition }}）{% endif %}</p>
+                    {% if reference.title_en %}<p class="article-reference__secondary">{{ reference.title_en }}</p>{% endif %}
+                    <p class="article-reference__meta">
+                      {% if reference.kind == "standard" %}<span>标准规范</span>{% elif reference.kind == "manual" %}<span>手册/参考书</span>{% elif reference.kind == "paper" %}<span>论文</span>{% elif reference.kind == "web" %}<span>网页</span>{% else %}<span>其他资料</span>{% endif %}
+                      {% if reference.organization %}<span>{{ reference.organization }}</span>{% endif %}
+                      {% if reference.clauses %}<span>条文 {{ reference.clauses|join:"、" }}</span>{% endif %}
+                      {% if reference.page_ranges %}<span>页码 {{ reference.page_ranges|join:"、" }}</span>{% endif %}
+                      {% if reference.accessed_on %}<span>查阅于 {{ reference.accessed_on|date:"Y-m-d" }}</span>{% endif %}
+                    </p>
+                    {% if reference.source_url %}<a class="article-reference__source" href="{{ reference.source_url }}" rel="noopener noreferrer">查看来源 <span aria-hidden="true">↗</span></a>{% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ol>
+          </section>
+        {% endif %}
+      {% endwith %}
+    </article>
   </main>
 {% endblock %}
