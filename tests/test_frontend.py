@@ -54,6 +54,7 @@ def test_signup_uses_the_same_editorial_system_as_the_public_site(client):
 
     assert response.status_code == 200
     assert "注册少惰主账号" in document
+    assert "注册后需完成验证或审核" in document
     assert 'class="auth-layout"' in document
     assert 'href="/static/css/editorial.css"' in document
     assert '<meta name="theme-color" content="#faf9f5">' in document

@@ -15,6 +15,11 @@ if not os.getenv("DJANGO_ALLOWED_HOSTS"):
 if not os.getenv("POSTGRES_PASSWORD"):
     raise ImproperlyConfigured("POSTGRES_PASSWORD must be set in production")
 
+if ACCOUNT_EMAIL_VERIFICATION not in {"mandatory", "optional", "none"}:
+    raise ImproperlyConfigured(
+        "ACCOUNT_EMAIL_VERIFICATION must be mandatory, optional, or none"
+    )
+
 TURNSTILE_REQUIRED = True
 if not TURNSTILE_EXPECTED_HOSTNAMES:
     TURNSTILE_EXPECTED_HOSTNAMES = ["sdzjoy.com", "id.sdzjoy.com"]
