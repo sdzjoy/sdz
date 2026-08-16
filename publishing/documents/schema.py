@@ -165,8 +165,9 @@ def _validate_known_attributes(node_type: str, attrs: dict[str, Any], path: str)
             _fail("image_asset", "图片必须引用有效的站内素材", f"{path}.assetId")
         if (
             not isinstance(src, str)
-            or not src.startswith("/media/assets/")
+            or not src.startswith(("/media/assets/", "/media/original_images/"))
             or src.startswith("//")
+            or "/../" in src
             or len(src) > 1_000
         ):
             _fail("image_src", "图片地址必须来自站内素材库", f"{path}.src")

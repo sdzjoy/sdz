@@ -20,6 +20,13 @@ ACCENT_VALIDATOR = RegexValidator(
 
 
 class Topic(models.Model):
+    legacy_source_id = models.PositiveBigIntegerField(
+        "旧系统标识",
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
+    )
     name = models.CharField("名称", max_length=80, unique=True)
     slug = models.SlugField("标识", max_length=80, unique=True, allow_unicode=True)
     description = models.CharField("说明", max_length=240, blank=True)
@@ -47,6 +54,13 @@ class Asset(models.Model):
         ATTACHMENT = "attachment", "普通附件"
 
     kind = models.CharField("类型", max_length=12, choices=Kind.choices)
+    legacy_source_id = models.PositiveBigIntegerField(
+        "旧系统标识",
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
+    )
     file = models.FileField("文件", upload_to="assets/%Y/%m/", max_length=500)
     original_name = models.CharField("原文件名", max_length=255)
     title = models.CharField("素材名称", max_length=200, blank=True)
@@ -144,6 +158,13 @@ class ContentEntry(models.Model):
         PUBLISHED = "published", "已发布"
 
     kind = models.CharField("内容类型", max_length=12, choices=Kind.choices, db_index=True)
+    legacy_source_id = models.PositiveBigIntegerField(
+        "旧系统标识",
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
+    )
     title = models.CharField("标题", max_length=200)
     slug = models.SlugField("网址标识", max_length=160, allow_unicode=True)
     summary = models.CharField("摘要", max_length=500, blank=True)

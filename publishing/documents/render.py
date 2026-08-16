@@ -324,10 +324,11 @@ def _render_node(node: dict[str, Any], context: RenderContext) -> str:
     if node_type == "cloudResource":
         return _render_cloud_resource(attrs["resourceId"], context)
 
-    node_name = html.escape(node_type, quote=True)
+    fallback_name = attrs.get("blockType", node_type) if node_type == "legacyBlock" else node_type
+    node_name = html.escape(str(fallback_name), quote=True)
     return (
         f'<div class="content-unsupported-node" data-node-type="{node_name}">'
-        f'<p>暂不支持的内容块：{html.escape(node_type)}</p>{children}</div>'
+        f'<p>暂不支持的内容块：{html.escape(str(fallback_name))}</p>{children}</div>'
     )
 
 

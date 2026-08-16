@@ -1,0 +1,12 @@
+{
+  "blocks": [
+    {"type": "section_heading", "value": {"level": "h2", "text": "设计参数"}},
+    {"type": "paragraph", "value": "<p><strong>冷通道</strong>温度为 <a href=\"https://example.com/source\">24 ℃</a>。</p>"},
+    {"type": "callout", "value": {"kind": "warning", "title": "校核提示", "content": "<p>必须校核最不利工况。</p>"}},
+    {"type": "equation", "value": {"latex": "Q = c_p m \\Delta T", "number": "1", "caption": "显热计算", "variables": [{"symbol": "Q", "meaning": "显热", "unit": "kW"}]}},
+    {"type": "data_table", "value": {"title": "温湿度", "table": {"data": [["参数", "数值"], ["干球温度", "35 ℃"]], "first_row_is_table_header": true, "first_col_is_header": false}, "units": "温度：℃", "source": "设计条件", "notes": "示例"}},
+    {"type": "parameter_card", "value": {"title": "机组", "items": [{"name": "风量", "value": "12000", "unit": "m³/h", "note": "单台"}]}},
+    {"type": "external_resource", "value": {"title": "参考网页", "url": "https://example.com/resource", "provider": "示例", "version": "2026", "description": "公开链接"}},
+    {"type": "code", "value": {"language": "python", "code": "print('hvac')", "caption": "计算示例", "show_line_numbers": true}}
+  ]
+}
