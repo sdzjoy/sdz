@@ -1,8 +1,8 @@
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Max, Q
 
-from content.models import ArticlePage, NotePage, ProjectPage, ToolPage
+from publishing.models import ContentEntry, ContentRevision
 from resources.models import Resource
 from standards.models import Standard
 
@@ -24,7 +24,11 @@ def search_documents(query, user, *, limit_per_group=20):
         return {}
     documents = SearchDocument.objects.filter(access_level__in=allowed_levels(user))
     if connection.vendor == "postgresql":
-        vector = SearchVector("title", weight="A") + SearchVector("summary", weight="B")
+        vector = (
+            SearchVector("title", weight="A")
+            + SearchVector("summary", weight="B")
+            + SearchVector("search_text", weight="C")
+        )
         search_query = SearchQuery(query, search_type="websearch", config="simple")
         documents = (
             documents.annotate(rank=SearchRank(vector, search_query))
@@ -46,38 +50,52 @@ def search_documents(query, user, *, limit_per_group=20):
     return grouped
 
 
-def _page_values(page, kind):
+def _content_values(content):
+    public_lastmod = getattr(content, "public_lastmod", None)
+    if public_lastmod is None:
+        public_revision = (
+            content.revisions.filter(action=ContentRevision.Action.PUBLISH)
+            .order_by("-number", "-pk")
+            .first()
+        )
+        public_lastmod = public_revision.created_at if public_revision else None
     return {
-        "kind": kind,
-        "object_id": str(page.pk),
-        "title": page.title,
-        "summary": getattr(page, "summary", ""),
-        "search_text": " ".join(topic.name for topic in page.topics.all()),
-        "url": page.url,
+        "kind": content.kind,
+        "object_id": str(content.pk),
+        "title": content.published_title,
+        "summary": content.published_summary,
+        "search_text": " ".join(
+            filter(
+                None,
+                (
+                    content.published_body_text,
+                    " ".join(topic.name for topic in content.published_topics.all()),
+                ),
+            )
+        ),
+        "url": content.get_absolute_url(),
         "access_level": "L0",
-        "source_updated_at": page.last_published_at,
+        "source_updated_at": public_lastmod or content.published_at,
     }
 
 
-PAGE_KINDS = {
-    ProjectPage: SearchDocument.Kind.PROJECT,
-    ArticlePage: SearchDocument.Kind.ARTICLE,
-    NotePage: SearchDocument.Kind.NOTE,
-    ToolPage: SearchDocument.Kind.TOOL,
-}
+def remove_content_document(content):
+    SearchDocument.objects.filter(kind=content.kind, object_id=str(content.pk)).delete()
 
 
-def index_page(page):
-    kind = next((value for model, value in PAGE_KINDS.items() if isinstance(page, model)), None)
-    if not kind:
+def index_content(content):
+    if (
+        content.deleted_at is not None
+        or content.status != ContentEntry.Status.PUBLISHED
+        or not content.published_slug
+        or content.published_body_json is None
+    ):
+        remove_content_document(content)
         return
-    if not page.live or not page.url:
-        SearchDocument.objects.filter(kind=kind, object_id=str(page.pk)).delete()
-        return
-    values = _page_values(page, kind)
+    values = _content_values(content)
     SearchDocument.objects.update_or_create(
-        kind=kind,
-        object_id=str(page.pk),
+        kind=content.kind,
+        object_id=str(content.pk),
         defaults={key: value for key, value in values.items() if key not in {"kind", "object_id"}},
     )
 
@@ -124,19 +142,19 @@ def index_resource(resource):
 
 def rebuild_index():
     expected = set()
-    for model, kind in PAGE_KINDS.items():
-        for page in model.objects.live().public().prefetch_related("topics"):
-            values = _page_values(page, kind)
-            SearchDocument.objects.update_or_create(
-                kind=kind,
-                object_id=str(page.pk),
-                defaults={
-                    key: value
-                    for key, value in values.items()
-                    if key not in {"kind", "object_id"}
-                },
+    contents = (
+        ContentEntry.objects.published()
+        .prefetch_related("published_topics")
+        .annotate(
+            public_lastmod=Max(
+                "revisions__created_at",
+                filter=Q(revisions__action=ContentRevision.Action.PUBLISH),
             )
-            expected.add((kind, str(page.pk)))
+        )
+    )
+    for content in contents:
+        index_content(content)
+        expected.add((content.kind, str(content.pk)))
     for standard in Standard.objects.all():
         index_standard(standard)
         expected.add((SearchDocument.Kind.STANDARD, str(standard.pk)))

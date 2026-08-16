@@ -1,4 +1,5 @@
-from content.models import ArticlePage, NotePage, ProjectPage, ToolPage
+from publishing.models import ContentEntry
+from publishing.public import PublishedContent
 from resources.models import Resource
 from standards.models import Standard
 
@@ -6,16 +7,21 @@ from .models import ContentReference
 
 
 def resolve_reference(item_type, object_id, user):
-    models = {
-        ContentReference.PROJECT: ProjectPage,
-        ContentReference.ARTICLE: ArticlePage,
-        ContentReference.NOTE: NotePage,
-        ContentReference.TOOL: ToolPage,
+    content_kinds = {
+        ContentReference.PROJECT,
+        ContentReference.ARTICLE,
+        ContentReference.NOTE,
+        ContentReference.TOOL,
     }
-    if item_type in models:
-        page = models[item_type].objects.live().public().filter(pk=object_id).first()
-        if page:
-            return {"title": page.title, "url": page.url, "object": page}
+    if item_type in content_kinds:
+        content = (
+            ContentEntry.objects.published()
+            .filter(pk=object_id, kind=item_type)
+            .first()
+        )
+        if content:
+            public = PublishedContent(content, user=user)
+            return {"title": public.title, "url": public.url, "object": public}
         return None
     if item_type == ContentReference.STANDARD:
         item = Standard.objects.filter(pk=object_id).first()
@@ -36,4 +42,3 @@ def resolved_items(queryset, user):
         if reference:
             results.append({"saved": saved, **reference})
     return results
-

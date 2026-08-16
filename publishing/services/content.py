@@ -2,6 +2,12 @@ from django.db import transaction
 from django.utils import timezone
 
 from publishing.documents import validate_document
+from publishing.events import (
+    content_published,
+    content_removed,
+    content_restored,
+    content_unpublished,
+)
 from publishing.models import ContentEntry, ContentRevision
 
 from .revisions import apply_snapshot, create_revision, snapshot_content
@@ -196,7 +202,9 @@ def publish_content(content, *, expected_version: int, actor, revision_summary: 
         }
     )
     locked.published_topics.set(snapshot["topics"])
-    return _reload(locked)
+    published = _reload(locked)
+    content_published.send(sender=type(published), instance=published, actor=actor)
+    return published
 
 
 @transaction.atomic
@@ -214,7 +222,9 @@ def unpublish_content(content, *, expected_version: int, actor, revision_summary
     locked.status = ContentEntry.Status.DRAFT
     locked.version += 1
     locked.save(update_fields={"status", "version", "updated_at"})
-    return _reload(locked)
+    unpublished = _reload(locked)
+    content_unpublished.send(sender=type(unpublished), instance=unpublished, actor=actor)
+    return unpublished
 
 
 @transaction.atomic
@@ -250,7 +260,9 @@ def move_to_trash(content, *, expected_version: int, actor, revision_summary: st
     locked.deleted_by = actor
     locked.version += 1
     locked.save(update_fields={"deleted_at", "deleted_by", "version", "updated_at"})
-    return _reload(locked)
+    removed = _reload(locked)
+    content_removed.send(sender=type(removed), instance=removed, actor=actor)
+    return removed
 
 
 @transaction.atomic
@@ -270,4 +282,6 @@ def restore_from_trash(content, *, expected_version: int, actor, revision_summar
     locked.deleted_by = None
     locked.version += 1
     locked.save(update_fields={"deleted_at", "deleted_by", "version", "updated_at"})
-    return _reload(locked)
+    restored = _reload(locked)
+    content_restored.send(sender=type(restored), instance=restored, actor=actor)
+    return restored

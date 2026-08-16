@@ -197,14 +197,12 @@ def _render_standard_reference(standard_id: int, context: RenderContext) -> str:
 
 def _render_cloud_resource(resource_id: int, context: RenderContext) -> str:
     if resource_id not in context.resources:
-        from resources.models import Resource, ResourceMirror
+        from resources.references import resolve_resource_reference
 
-        resource = Resource.objects.visible_to(context.user).filter(pk=resource_id).first()
-        if resource is not None:
-            resource._visible_mirrors = list(
-                resource.mirrors.filter(status=ResourceMirror.Status.ACTIVE)
-            )
-        context.resources[resource_id] = resource
+        context.resources[resource_id] = resolve_resource_reference(
+            resource_id,
+            context.user,
+        )
     resource = context.resources[resource_id]
     if resource is None:
         return (
@@ -215,7 +213,7 @@ def _render_cloud_resource(resource_id: int, context: RenderContext) -> str:
     title = html.escape(resource.title)
     detail_url = html.escape(resource.get_absolute_url(), quote=True)
     mirrors = []
-    for mirror in resource._visible_mirrors:
+    for mirror in resource.active_mirrors:
         if not _safe_link(mirror.share_url):
             continue
         provider = html.escape(mirror.get_provider_display())

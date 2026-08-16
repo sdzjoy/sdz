@@ -1,13 +1,25 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from wagtail.signals import page_published, page_unpublished
 
-from content.models import ArticlePage, NotePage, ProjectPage, ToolPage
+from notifications.models import Event
+from notifications.services import emit_event
+from publishing.events import (
+    content_published,
+    content_removed,
+    content_restored,
+    content_unpublished,
+)
+from publishing.models import ContentEntry
 from resources.models import Resource
 from standards.models import Standard
 
 from .models import SearchDocument
-from .services import index_page, index_resource, index_standard
+from .services import (
+    index_content,
+    index_resource,
+    index_standard,
+    remove_content_document,
+)
 
 
 @receiver(post_save, sender=Standard)
@@ -30,41 +42,34 @@ def delete_resource_document(sender, instance, **kwargs):
     SearchDocument.objects.filter(kind="resource", object_id=str(instance.pk)).delete()
 
 
-@receiver(page_published)
-def update_page_document(sender, instance, **kwargs):
-    page = instance.specific
-    index_page(page)
-    from notifications.models import Event
-    from notifications.services import emit_event
-
-    kind = next(
-        (
-            value
-            for model, value in (
-                (ProjectPage, "project"),
-                (ArticlePage, "article"),
-                (NotePage, "note"),
-                (ToolPage, "tool"),
-            )
-            if isinstance(page, model)
-        ),
-        None,
+@receiver(content_published)
+def update_content_document(sender, instance, **kwargs):
+    index_content(instance)
+    emit_event(
+        event_type=Event.EventType.CONTENT_PUBLISHED,
+        title=f"{instance.published_title} 已发布",
+        payload={
+            "item_type": instance.kind,
+            "object_id": instance.pk,
+            "summary": instance.published_summary,
+            "url": instance.get_absolute_url(),
+        },
+        dedupe_key=f"content-publication:{instance.pk}:{instance.version}",
+        priority=Event.Priority.DIGEST,
     )
-    if kind:
-        emit_event(
-            event_type=Event.EventType.CONTENT_PUBLISHED,
-            title=f"{page.title} 已发布",
-            payload={
-                "item_type": kind,
-                "object_id": page.pk,
-                "summary": getattr(page, "summary", ""),
-                "url": page.url,
-            },
-            dedupe_key=f"page-publication:{page.pk}:{page.latest_revision_id}",
-            priority=Event.Priority.DIGEST,
-        )
 
 
-@receiver(page_unpublished)
-def delete_page_document(sender, instance, **kwargs):
-    index_page(instance.specific)
+@receiver(content_unpublished)
+@receiver(content_removed)
+def hide_content_document(sender, instance, **kwargs):
+    remove_content_document(instance)
+
+
+@receiver(content_restored)
+def restore_content_document(sender, instance, **kwargs):
+    index_content(instance)
+
+
+@receiver(post_delete, sender=ContentEntry)
+def delete_content_document(sender, instance, **kwargs):
+    remove_content_document(instance)

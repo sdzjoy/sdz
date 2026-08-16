@@ -9,7 +9,9 @@ from django.test import Client
 from django.urls import reverse
 
 from accounts.models import User
+from notifications.models import Event
 from publishing.models import Article, ContentRevision, Project, Topic
+from searchapp.models import SearchDocument
 from studio.models import AuditEvent
 from studio.permissions import ROLE_GROUPS, StudioRole
 
@@ -224,6 +226,8 @@ def test_publish_rolls_back_content_and_revision_when_audit_fails(client):
     assert article.version == 0
     assert article.published_body_json is None
     assert article.revisions.count() == 0
+    assert not SearchDocument.objects.filter(kind="article", object_id=article.pk).exists()
+    assert not Event.objects.filter(event_type=Event.EventType.CONTENT_PUBLISHED).exists()
 
 
 def test_preview_uses_server_rendered_safe_html(client):
