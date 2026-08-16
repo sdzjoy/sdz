@@ -5,17 +5,16 @@ import pytest
 from django.contrib.staticfiles import finders
 from django.test import override_settings
 
-from content.models import ArticleIndexPage, ArticlePage, ProjectIndexPage, ProjectPage
+from accounts.models import User
+from publishing.models import Article, Project
+from publishing.services import publish_content
 
 pytestmark = pytest.mark.django_db
+TEST_PASSWORD = "a-safe-test-password"  # noqa: S105
 
 
-def publish(parent, page):
-    page.live = False
-    parent.add_child(instance=page)
-    page.save_revision().publish()
-    page.refresh_from_db()
-    return page
+def publish_entry(entry, actor):
+    return publish_content(entry, expected_version=entry.version, actor=actor)
 
 
 def test_homepage_has_honest_empty_state_and_accessible_site_shell(client):
@@ -80,26 +79,25 @@ def test_content_indexes_use_the_editorial_masthead(client, path, heading, empty
 
 
 def test_homepage_only_surfaces_published_content(client):
-    project_index = ProjectIndexPage.objects.get(depth=3)
-    publish(
-        project_index,
-        ProjectPage(
+    actor = User.objects.create_user("homepage-author@example.com", TEST_PASSWORD)
+    publish_entry(
+        Project.objects.create(
             title="已公开项目",
             slug="public-project",
             summary="真实公开内容。",
             started_on=date(2026, 8, 1),
             featured=True,
+            author=actor,
         ),
+        actor,
     )
-    draft = ProjectPage(
+    Project.objects.create(
         title="未公开项目",
         slug="draft-project",
         summary="不应出现在首页。",
         started_on=date(2026, 8, 2),
-        live=False,
+        author=actor,
     )
-    project_index.add_child(instance=draft)
-    draft.save_revision()
 
     response = client.get("/")
     document = response.content.decode()
@@ -133,47 +131,48 @@ def test_www_redirect_is_permanent_and_preserves_path_and_query(client):
 
 
 def test_rss_and_sitemap_exclude_drafts(client):
-    article_index = ArticleIndexPage.objects.get(depth=3)
-    published = publish(
-        article_index,
-        ArticlePage(
+    actor = User.objects.create_user("feed-author@example.com", TEST_PASSWORD)
+    published = publish_entry(
+        Article.objects.create(
             title="公开文章",
             slug="published-article",
             summary="应出现在公开发现入口。",
             published_on=date(2026, 8, 15),
+            author=actor,
         ),
+        actor,
     )
-    draft = ArticlePage(
+    Article.objects.create(
         title="内部草稿",
         slug="internal-draft",
         summary="不能被发现。",
         published_on=date(2026, 8, 16),
-        live=False,
+        author=actor,
     )
-    article_index.add_child(instance=draft)
-    draft.save_revision()
 
     feed = client.get("/feeds/articles.xml").content.decode()
     sitemap = client.get("/sitemap.xml").content.decode()
 
-    assert published.title in feed
-    assert draft.title not in feed
-    assert published.slug in sitemap
-    assert draft.slug not in sitemap
+    assert published.published_title in feed
+    assert "内部草稿" not in feed
+    assert published.published_slug in sitemap
+    assert "internal-draft" not in sitemap
 
 
 def test_article_uses_article_metadata(client):
-    article = publish(
-        ArticleIndexPage.objects.get(depth=3),
-        ArticlePage(
+    actor = User.objects.create_user("metadata-author@example.com", TEST_PASSWORD)
+    article = publish_entry(
+        Article.objects.create(
             title="结构化文章",
             slug="structured-article",
             summary="用于检查文章元数据。",
             published_on=date(2026, 8, 15),
+            author=actor,
         ),
+        actor,
     )
 
-    document = client.get(article.url).content.decode()
+    document = client.get(article.get_absolute_url()).content.decode()
 
     assert '<meta property="og:type" content="article">' in document
     assert '"@type":"BlogPosting"' in document

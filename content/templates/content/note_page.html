@@ -7,10 +7,11 @@
 {% endblock %}
 {% block content %}
   <main class="shell detail-page">
+    {% include "content/_breadcrumbs.html" %}
     <p class="eyebrow">NOTE · {{ page.noted_on }}</p>
     <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
     {% item_actions "note" page.pk %}
     {% if page.promoted_article %}<p class="promotion-link">这条随记已整理为：<a href="{{ page.promoted_article.url }}">{{ page.promoted_article.title }}</a></p>{% endif %}
-    <div class="prose">{% include "content/_body.html" with body=page.body %}</div>
+    <div class="prose">{% include "content/_body.html" with rendered_body=page.body_html body=page.body %}</div>
   </main>
 {% endblock %}

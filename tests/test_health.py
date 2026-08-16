@@ -1,18 +1,16 @@
 import pytest
 from django.urls import reverse
-from wagtail.models import Site
 
 
 @pytest.mark.django_db
-def test_homepage_is_the_sdzjoy_wagtail_page(client):
+def test_homepage_is_served_by_the_snapshot_publishing_site(client):
     response = client.get("/")
 
     assert response.status_code == 200
     assert "少惰主" in response.content.decode()
-    assert response.context["page"].specific_class.__name__ == "HomePage"
-    assert Site.objects.get(is_default_site=True).root_page_id == response.context[
-        "page"
-    ].id
+    assert response.resolver_match.namespace == "publishing"
+    assert response.resolver_match.url_name == "home"
+    assert response.context["page"].title == "少惰主 · SDZJOY"
 
 
 @pytest.mark.django_db

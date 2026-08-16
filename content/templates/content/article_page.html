@@ -8,6 +8,7 @@
 {% block content %}
   <main class="shell detail-page article-page">
     <article>
+      {% include "content/_breadcrumbs.html" %}
       <header class="article-masthead">
         <div class="article-masthead__copy">
           <p class="eyebrow">TECHNICAL ARTICLE · DATA CENTER HVAC</p>
@@ -29,7 +30,15 @@
 
       {% item_actions "article" page.pk %}
 
-      {% if page.cover_image %}
+      {% if page.cover_asset %}
+        <figure class="article-cover">
+          <img src="{{ page.cover_asset.file.url }}"
+               width="{{ page.cover_asset.width }}"
+               height="{{ page.cover_asset.height }}"
+               alt="{{ page.cover_asset.alt_text|default:page.title }}"
+               fetchpriority="high">
+        </figure>
+      {% elif page.cover_image %}
         {% image page.cover_image width-1600 as cover %}
         <figure class="article-cover">
           <img src="{{ cover.url }}"
@@ -41,7 +50,7 @@
       {% endif %}
 
       <div class="article-reading-area">
-        <div class="prose reading-surface">{% include "content/_body.html" with body=page.body %}</div>
+        <div class="prose reading-surface">{% include "content/_body.html" with rendered_body=page.body_html body=page.body %}</div>
       </div>
 
       {% with references=page.reference_entries %}

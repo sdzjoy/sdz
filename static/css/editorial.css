@@ -2740,3 +2740,14 @@ summary {
     font-size: clamp(7rem, 45vw, 11rem);
   }
 }
+.content-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  align-items: center;
+  margin: 0 0 2rem;
+  color: var(--color-muted, #6b675f);
+  font-size: .78rem;
+}
+.content-breadcrumbs a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.content-breadcrumbs [aria-current="page"] { overflow: hidden; max-width: 28rem; color: var(--color-ink, #181815); text-overflow: ellipsis; white-space: nowrap; }
