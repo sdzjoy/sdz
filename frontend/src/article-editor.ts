@@ -13,8 +13,18 @@ import {
   insertUploadedImage,
   uploadImageFile,
 } from './extensions/image'
+import { Callout } from './extensions/callout'
+import { CloudResource } from './extensions/cloud-resource'
+import { Equation } from './extensions/equation'
+import { ParameterCard } from './extensions/parameter-card'
+import { StandardReference } from './extensions/reference'
 import { createPasteCleanupExtension } from './paste'
-import { defaultSlashCommands, setupSlashMenu } from './slash-menu'
+import { chooseReference } from './reference-picker'
+import {
+  defaultSlashCommands,
+  setupSlashMenu,
+  type SlashCommand,
+} from './slash-menu'
 import { createToolbarExtensions, setupToolbar } from './toolbar'
 
 interface ArticleConfig {
@@ -37,6 +47,7 @@ interface ArticleConfig {
   publishUrl: string
   previewUrl: string
   imageUploadUrl: string
+  referenceSearchUrl: string
 }
 
 interface ArticleDraft {
@@ -77,6 +88,101 @@ function restoreDraft(config: ArticleConfig, storageKey: string): ArticleDraft |
   if (!stored || stored.draft.version !== config.version) return null
   const when = new Date(stored.savedAt).toLocaleString('zh-CN')
   return window.confirm(`发现 ${when} 保存在本机但尚未上传的草稿，是否恢复？`) ? stored.draft : null
+}
+
+function professionalSlashCommands(referenceSearchUrl: string): SlashCommand[] {
+  return [
+    {
+      id: 'callout',
+      label: '提示框',
+      description: '设计提示、注意事项或警告',
+      keywords: 'callout tip warning 提示 注意 警告',
+      run: (editor) => {
+        const title = window.prompt('提示框标题', '设计提示')
+        if (title === null) return
+        editor.chain().focus().insertContent({
+          type: 'callout',
+          attrs: { variant: 'info', title: title.trim() || '设计提示' },
+          content: [{ type: 'paragraph' }],
+        }).run()
+      },
+    },
+    {
+      id: 'equation',
+      label: '公式',
+      description: '输入 LaTeX，服务器安全渲染',
+      keywords: 'equation math latex 公式',
+      run: (editor) => {
+        const latex = window.prompt('输入 LaTeX 公式，例如 Q = mc\\Delta t')
+        if (!latex?.trim()) return
+        editor.chain().focus().insertContent({
+          type: 'equation',
+          attrs: { latex: latex.trim() },
+        }).run()
+      },
+    },
+    {
+      id: 'standard-reference',
+      label: '规范引用',
+      description: '引用规范库中的当前记录',
+      keywords: 'standard code 规范 标准 引用',
+      run: (editor) => {
+        void chooseReference({
+          kind: 'standard',
+          searchUrl: referenceSearchUrl,
+          title: '选择规范',
+          placeholder: '输入标准编号或名称',
+        }).then((standardId) => {
+          if (standardId) editor.chain().focus().insertContent({
+            type: 'standardReference', attrs: { standardId },
+          }).run()
+        })
+      },
+    },
+    {
+      id: 'parameter-card',
+      label: '参数卡',
+      description: '突出展示暖通设计参数',
+      keywords: 'parameter value unit 参数 数值 单位',
+      run: (editor) => {
+        const name = window.prompt('参数名称，例如 冷冻水供回水温差')
+        if (!name?.trim()) return
+        const value = window.prompt('参数值，例如 6')
+        if (!value?.trim()) return
+        const unit = window.prompt('单位，例如 ℃', '')
+        if (unit === null) return
+        const note = window.prompt('补充说明（可留空）', '')
+        if (note === null) return
+        editor.chain().focus().insertContent({
+          type: 'parameterCard',
+          attrs: {
+            name: name.trim(),
+            value: value.trim(),
+            unit: unit.trim(),
+            note: note.trim(),
+          },
+        }).run()
+      },
+    },
+    {
+      id: 'cloud-resource',
+      label: '网盘资源',
+      description: '按会员等级显示受控下载入口',
+      keywords: 'cloud resource 百度网盘 阿里云盘 资源',
+      run: (editor) => {
+        void chooseReference({
+          kind: 'resource',
+          searchUrl: referenceSearchUrl,
+          title: '选择网盘资源',
+          placeholder: '输入资源名称',
+        }).then((resourceId) => {
+          if (resourceId) editor.chain().focus().insertContent({
+            type: 'cloudResource', attrs: { resourceId },
+          }).run()
+        })
+      },
+    },
+  ]
 }
 
 function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): void {
@@ -131,6 +237,11 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
       saveState.dataset.state = 'dirty'
       saveState.textContent = message
     }),
+    Callout,
+    Equation,
+    StandardReference,
+    ParameterCard,
+    CloudResource,
   ]
   const editor = createStudioEditor({
     element: requiredElement<HTMLElement>(root, '[data-editor-surface]'),
@@ -215,7 +326,10 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
   const slashMenu = setupSlashMenu(
     root,
     editor,
-    defaultSlashCommands({ onImage: () => imageInput.click() }),
+    defaultSlashCommands({
+      onImage: () => imageInput.click(),
+      extraCommands: professionalSlashCommands(config.referenceSearchUrl),
+    }),
   )
   requiredElement<HTMLButtonElement>(root, '[data-open-slash]')
     .addEventListener('click', slashMenu.open)

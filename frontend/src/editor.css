@@ -35,3 +35,31 @@
   padding: 0.55rem 0.7rem;
   vertical-align: top;
 }
+
+.studio-editor .studio-callout,
+.studio-editor .studio-equation,
+.studio-editor .studio-reference-node,
+.studio-editor .studio-parameter-card,
+.studio-editor .studio-cloud-resource-node {
+  margin: 1.4rem 0;
+  border: 1px solid #d7d1c4;
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  background: #f8f4ec;
+}
+
+.studio-editor .studio-callout::before {
+  content: attr(data-title);
+  display: block;
+  margin-bottom: 0.55rem;
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 700;
+}
+
+.studio-editor .studio-callout-warning { border-left: 4px solid #b64b35; }
+.studio-editor .studio-callout-tip { border-left: 4px solid #4f7556; }
+.studio-editor .studio-equation { overflow-x: auto; text-align: center; }
+.studio-editor .studio-parameter-card { display: grid; grid-template-columns: 1fr auto; gap: 0.35rem 1rem; }
+.studio-editor .studio-parameter-card > strong { color: #6f6a61; }
+.studio-editor .studio-parameter-card > span { font-size: 1.35rem; font-weight: 700; }
+.studio-editor .studio-parameter-card > small { grid-column: 1 / -1; color: #6f6a61; }

@@ -7,6 +7,7 @@ from .api.articles import (
     save_article,
 )
 from .api.assets import delete_image, upload_image
+from .api.references import reference_search
 from .views.assets import asset_library, delete_asset
 from .views.content import (
     bulk_content_action,
@@ -63,6 +64,7 @@ urlpatterns = [
     path("assets/", asset_library, name="assets"),
     path("assets/<int:pk>/delete/", delete_asset, name="asset_delete"),
     path("api/assets/images/", upload_image, name="api_asset_upload"),
+    path("api/references/", reference_search, name="api_reference_search"),
     path(
         "api/assets/images/<int:pk>/delete/",
         delete_image,

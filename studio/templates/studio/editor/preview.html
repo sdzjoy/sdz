@@ -10,6 +10,6 @@
     <h1>{{ article.title }}</h1>
     {% if article.summary %}<p class="article-preview-summary">{{ article.summary }}</p>{% endif %}
     <div class="article-preview-meta"><time>{{ article.published_on|date:"Y年m月d日" }}</time><span>{{ article.effective_reading_minutes }} 分钟</span>{% for topic in article.topics.all %}<span>{{ topic.name }}</span>{% endfor %}</div>
-    <div class="article-preview-body">{{ article.rendered_html|safe }}</div>
+    <div class="article-preview-body">{{ preview_html|safe }}</div>
   </article>
 {% endblock %}

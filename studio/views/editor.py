@@ -4,7 +4,7 @@ from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from publishing.documents import CURRENT_SCHEMA_VERSION, empty_document
+from publishing.documents import CURRENT_SCHEMA_VERSION, empty_document, render_document
 from publishing.models import Article, Project, Topic
 
 from ..permissions import CONTENT_ROLES, studio_context, studio_role_required
@@ -51,6 +51,7 @@ def _editor_context(request, article=None):
                 if article
                 else "",
                 "imageUploadUrl": reverse("studio:api_asset_upload"),
+                "referenceSearchUrl": reverse("studio:api_reference_search"),
             },
         }
     )
@@ -81,5 +82,11 @@ def article_preview(request, pk):
         pk=pk,
     )
     context = studio_context(request.user)
-    context.update({"studio_section": "content", "article": article})
+    context.update(
+        {
+            "studio_section": "content",
+            "article": article,
+            "preview_html": render_document(article.body_json, user=request.user),
+        }
+    )
     return render(request, "studio/editor/preview.html", context)

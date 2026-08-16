@@ -34,6 +34,11 @@ KNOWN_NODES = {
     "tableHeader",
     "tableCell",
     "image",
+    "callout",
+    "equation",
+    "standardReference",
+    "parameterCard",
+    "cloudResource",
 }
 KNOWN_MARKS = {"bold", "italic", "strike", "underline", "code", "link"}
 
@@ -44,6 +49,11 @@ NODE_ATTRIBUTES = {
     "tableCell": {"colspan", "rowspan", "colwidth"},
     "tableHeader": {"colspan", "rowspan", "colwidth"},
     "image": {"assetId", "src", "alt", "title", "width", "height"},
+    "callout": {"variant", "title"},
+    "equation": {"latex"},
+    "standardReference": {"standardId"},
+    "parameterCard": {"name", "value", "unit", "note"},
+    "cloudResource": {"resourceId"},
 }
 MARK_ATTRIBUTES = {
     "link": {"href", "title", "target", "rel", "class"},
@@ -172,6 +182,29 @@ def _validate_known_attributes(node_type: str, attrs: dict[str, Any], path: str)
                 or not 1 <= value <= 12_000
             ):
                 _fail("image_size", "图片尺寸无效", f"{path}.{name}")
+    if node_type == "callout":
+        if attrs.get("variant") not in {"info", "tip", "warning"}:
+            _fail("callout_variant", "提示框类型无效", f"{path}.variant")
+        title = attrs.get("title", "")
+        if not isinstance(title, str) or len(title) > 120:
+            _fail("callout_title", "提示框标题无效", f"{path}.title")
+    if node_type == "equation":
+        latex = attrs.get("latex")
+        if not isinstance(latex, str) or not latex.strip() or len(latex) > 4_000:
+            _fail("equation_latex", "公式 LaTeX 无效或过长", f"{path}.latex")
+    if node_type in {"standardReference", "cloudResource"}:
+        name = "standardId" if node_type == "standardReference" else "resourceId"
+        value = attrs.get(name)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            _fail("reference_id", "引用对象标识无效", f"{path}.{name}")
+    if node_type == "parameterCard":
+        limits = {"name": 120, "value": 120, "unit": 40, "note": 500}
+        for name, limit in limits.items():
+            value = attrs.get(name, "")
+            if not isinstance(value, str) or len(value) > limit:
+                _fail("parameter_value", "参数卡内容无效或过长", f"{path}.{name}")
+        if not attrs.get("name", "").strip() or not attrs.get("value", "").strip():
+            _fail("parameter_required", "参数卡必须包含参数名称和值", path)
 
 
 def _validate_mark(mark: Any, path: str, warnings: list[DocumentWarning]) -> None:
@@ -261,6 +294,14 @@ def _validate_node(
     content = node.get("content", [])
     if not isinstance(content, list):
         _fail("content_type", "子节点必须是数组", f"{path}.content")
+    if node_type in {
+        "image",
+        "equation",
+        "standardReference",
+        "parameterCard",
+        "cloudResource",
+    } and content:
+        _fail("leaf_content", f"{node_type} 不能包含子节点", f"{path}.content")
     for index, child in enumerate(content):
         _validate_node(child, f"{path}.content[{index}]", depth + 1, state, warnings)
 
