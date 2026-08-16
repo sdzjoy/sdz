@@ -89,6 +89,7 @@ class EquationBlock(blocks.StructBlock):
         label = "工程公式"
         group = "工程资料"
         template = "content/blocks/equation_block.html"
+        form_classname = "struct-block editorial-equation-block"
 
 
 class ReferenceBlock(blocks.StructBlock):
