@@ -68,7 +68,7 @@ def test_cms_home_is_an_editorial_workbench_with_real_content(client):
     section(NoteIndexPage).add_child(instance=pending_note)
     pending_note.save_revision()
 
-    response = client.get("/cms/")
+    response = client.get("/legacy-cms/")
     body = response.content.decode()
 
     assert response.status_code == 200
@@ -105,7 +105,7 @@ def test_workbench_does_not_leak_pages_or_add_actions_without_page_permission(cl
     )
     client.force_login(staff)
 
-    response = client.get("/cms/")
+    response = client.get("/legacy-cms/")
     body = response.content.decode()
 
     assert response.status_code == 200

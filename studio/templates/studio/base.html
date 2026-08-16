@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="theme-color" content="#f4f0e8">
+    <title>{% block title %}少惰主后台{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/mark.svg' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'studio/studio.css' %}">
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="studio-body{% block body_class %}{% endblock %}">
+    <a class="studio-skip-link" href="#studio-main">跳到主要内容</a>
+    <div class="studio-shell">
+      <aside class="studio-sidebar" aria-label="后台导航">
+        <a class="studio-brand" href="{% url 'studio:dashboard' %}">
+          <span class="studio-brand-mark" aria-hidden="true">少</span>
+          <span><strong>少惰主</strong><small>内容与资料后台</small></span>
+        </a>
+        <nav class="studio-nav">
+          <a href="{% url 'studio:dashboard' %}"{% if studio_section == 'dashboard' %} aria-current="page"{% endif %}>首页</a>
+          {% if studio_can_edit_content %}
+            <a href="{% url 'studio:content_list' %}"{% if studio_section == 'content' %} aria-current="page"{% endif %}>内容</a>
+          {% endif %}
+          {% if studio_can_manage_resources %}
+            <a href="{% url 'studio:assets' %}"{% if studio_section == 'assets' or studio_section == 'resources' %} aria-current="page"{% endif %}>资料库</a>
+          {% endif %}
+          {% if studio_is_owner %}
+            <a href="{% url 'studio:users' %}"{% if studio_section == 'users' %} aria-current="page"{% endif %}>用户</a>
+            <a href="{% url 'studio:settings' %}"{% if studio_section == 'settings' %} aria-current="page"{% endif %}>设置</a>
+          {% endif %}
+        </nav>
+        <div class="studio-account">
+          <span>{{ request.user.display_name|default:request.user.email }}</span>
+          <small>{{ studio_role_label }}</small>
+          <a href="/account/logout/">退出</a>
+        </div>
+      </aside>
+
+      <main class="studio-main" id="studio-main" tabindex="-1">
+        {% if messages %}
+          <div class="studio-messages" aria-live="polite">
+            {% for message in messages %}<p class="studio-message">{{ message }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

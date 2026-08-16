@@ -1,0 +1,17 @@
+{% extends "studio/base.html" %}
+
+{% block title %}{{ placeholder_title }} · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header">
+    <div>
+      <p class="studio-eyebrow">少惰主后台</p>
+      <h1>{{ placeholder_title }}</h1>
+      <p>{{ placeholder_description }}</p>
+    </div>
+  </header>
+  <section class="studio-panel studio-placeholder">
+    <p>这个入口已经纳入新后台权限和导航，功能正在按施工批次接入。</p>
+    <a href="{% url 'studio:dashboard' %}">返回首页</a>
+  </section>
+{% endblock %}

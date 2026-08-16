@@ -9,7 +9,7 @@ from django.urls import reverse
 
 
 class StaffMFARequiredMiddleware:
-    protected_prefixes = ("/cms/", "/django-admin/")
+    protected_prefixes = ("/cms/", "/legacy-cms/", "/django-admin/")
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -22,7 +22,12 @@ class StaffMFARequiredMiddleware:
         if not user.is_authenticated:
             query = urlencode({"next": request.get_full_path()})
             return redirect(f"{settings.LOGIN_URL}?{query}")
-        if not user.is_active or not user.is_staff:
+        if request.path.startswith("/cms/"):
+            from studio.permissions import get_studio_role
+
+            if not user.is_active or get_studio_role(user) is None:
+                raise PermissionDenied
+        elif not user.is_active or not user.is_staff:
             raise PermissionDenied
         if not get_mfa_adapter().is_mfa_enabled(user):
             messages.error(request, "管理后台要求先启用通行密钥或动态验证码。")
@@ -37,6 +42,7 @@ class PrivateResponseMiddleware:
         "/resources/",
         "/search/",
         "/cms/",
+        "/legacy-cms/",
         "/django-admin/",
     )
 

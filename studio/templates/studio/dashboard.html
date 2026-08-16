@@ -1,0 +1,73 @@
+{% extends "studio/base.html" %}
+
+{% block title %}首页 · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header studio-dashboard-header">
+    <div>
+      <p class="studio-eyebrow">工作台</p>
+      <h1>今天准备写点什么？</h1>
+      <p>继续草稿、发布文章，或者整理一条工程资料。</p>
+    </div>
+    {% if studio_can_edit_content %}
+      <a class="studio-button studio-button-primary" href="{% url 'studio:article_create' %}">写文章</a>
+    {% endif %}
+  </header>
+
+  {% if studio_can_edit_content %}
+    <section class="studio-dashboard-grid" aria-label="内容概览">
+      <div class="studio-panel">
+        <div class="studio-panel-heading">
+          <div><p class="studio-eyebrow">继续写</p><h2>最近草稿</h2></div>
+          <a href="{% url 'studio:content_list' %}?status=draft">查看全部</a>
+        </div>
+        <div class="studio-record-list">
+          {% for item in recent_drafts %}
+            <a href="{% url 'studio:content_list' %}?q={{ item.title|urlencode }}">
+              <span><strong>{{ item.title }}</strong><small>{{ item.get_kind_display }} · {{ item.updated_at|date:"m月d日 H:i" }}</small></span>
+              <span aria-hidden="true">→</span>
+            </a>
+          {% empty %}
+            <div class="studio-empty"><p>还没有草稿。</p><a href="{% url 'studio:article_create' %}">写第一篇文章</a></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="studio-panel">
+        <div class="studio-panel-heading">
+          <div><p class="studio-eyebrow">最近上线</p><h2>已发布</h2></div>
+          <a href="{% url 'studio:content_list' %}?status=published">查看全部</a>
+        </div>
+        <div class="studio-record-list">
+          {% for item in recent_published %}
+            <a href="{{ item.get_absolute_url }}" target="_blank" rel="noopener">
+              <span><strong>{{ item.published_title }}</strong><small>{{ item.get_kind_display }} · {{ item.published_at|date:"m月d日 H:i" }}</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          {% empty %}
+            <div class="studio-empty"><p>还没有已发布内容。</p></div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="studio-panel studio-overview-panel">
+      <div class="studio-panel-heading">
+        <div><p class="studio-eyebrow">待处理</p><h2>需要留意</h2></div>
+      </div>
+      <div class="studio-metric-row">
+        <a href="{% url 'studio:content_list' %}?kind=note"><strong>{{ pending_note_count }}</strong><span>条随记待整理</span></a>
+        <a href="{% url 'studio:content_list' %}?location=trash"><strong>{{ trash_count }}</strong><span>项内容在回收站</span></a>
+        <div><strong>{{ content_counts.article|default:0 }}</strong><span>篇文章</span></div>
+        <div><strong>{{ content_counts.project|default:0 }}</strong><span>个项目</span></div>
+      </div>
+    </section>
+  {% else %}
+    <section class="studio-panel studio-role-welcome">
+      <p class="studio-eyebrow">资料管理员</p>
+      <h2>从资料库开始</h2>
+      <p>你可以维护图片素材、规范目录和受等级控制的网盘资源。</p>
+      <a class="studio-button studio-button-primary" href="{% url 'studio:resources' %}">进入资料库</a>
+    </section>
+  {% endif %}
+{% endblock %}
