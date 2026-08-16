@@ -1,0 +1,4 @@
+<aside class="attachment-card">
+  <p><a href="{{ value.document.url }}">{{ value.display_name|default:value.document.title }}</a>{% if value.version %} <span>· {{ value.version }}</span>{% endif %}</p>
+  {% if value.description %}<p>{{ value.description }}</p>{% endif %}
+</aside>

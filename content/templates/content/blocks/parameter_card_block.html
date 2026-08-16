@@ -1,0 +1,11 @@
+<section class="parameter-card">
+  {% if value.title %}<h3>{{ value.title }}</h3>{% endif %}
+  <dl>
+    {% for item in value.items %}
+      <div class="parameter-card__item">
+        <dt>{{ item.name }}</dt>
+        <dd><strong>{{ item.value }}</strong>{% if item.unit %} <span>{{ item.unit }}</span>{% endif %}{% if item.note %}<small>{{ item.note }}</small>{% endif %}</dd>
+      </div>
+    {% endfor %}
+  </dl>
+</section>

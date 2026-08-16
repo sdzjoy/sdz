@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 from django.db.models.deletion import ProtectedError
 from django.test import RequestFactory
+from wagtail.images import get_image_model
 
 from content.models import (
     AboutPage,
@@ -180,3 +181,71 @@ def test_markdown_disables_raw_html_and_unsafe_urls():
     assert "<script" not in rendered.lower()
     assert 'href="javascript:' not in rendered.lower()
     assert "危险链接" in rendered
+
+
+def test_article_reading_time_is_estimated_unless_manually_overridden():
+    article = ArticlePage(
+        title="自动阅读时间",
+        summary="验证自动估算。",
+        body=[("markdown", "暖通设计" * 176)],
+    )
+
+    assert article.reading_minutes is None
+    assert article.estimated_reading_minutes == 3
+    assert article.effective_reading_minutes == 3
+
+    article.reading_minutes = 12
+    assert article.effective_reading_minutes == 12
+
+
+def test_article_references_merge_same_source_and_keep_cited_locations():
+    common = {
+        "kind": "standard",
+        "identifier": "GB 50736",
+        "title_zh": "民用建筑供暖通风与空气调节设计规范",
+        "title_en": "",
+        "edition": "2012",
+        "pages": "",
+        "excerpt": "",
+        "organization": "",
+        "source_url": "https://example.com/gb50736",
+        "accessed_on": None,
+        "editor_note": "后台私有备注",
+    }
+    article = ArticlePage(
+        title="结构化引用",
+        summary="验证引用去重。",
+        body=[
+            ("reference", {**common, "clause": "4.1.1"}),
+            ("paragraph", "正文"),
+            ("reference", {**common, "clause": "4.1.2"}),
+            ("reference", {**common, "clause": "4.1.1"}),
+        ],
+    )
+
+    assert len(article.reference_entries) == 1
+    assert article.reference_entries[0]["clauses"] == ["4.1.1", "4.1.2"]
+    assert "editor_note" not in article.reference_entries[0]
+
+
+def test_article_editor_keeps_writing_fields_in_content_and_metadata_in_settings():
+    content_field_names = {
+        panel.field_name
+        for panel in ArticlePage.content_panels
+        if hasattr(panel, "field_name")
+    }
+    settings_children = ArticlePage.settings_panels[0].children
+    setting_field_names = {panel.field_name for panel in settings_children}
+
+    assert {"summary", "cover_image", "body"} <= content_field_names
+    assert "published_on" not in content_field_names
+    assert {"published_on", "project", "topics", "featured", "reading_minutes"} <= (
+        setting_field_names
+    )
+
+
+def test_article_cover_image_is_optional():
+    image_model = get_image_model()
+
+    assert ArticlePage._meta.get_field("cover_image").related_model is image_model
+    assert ArticlePage._meta.get_field("cover_image").null is True

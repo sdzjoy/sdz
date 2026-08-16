@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load notification_tags %}
+{% load notification_tags wagtailimages_tags %}
 {% block title %}{{ page.seo_title|default:page.title }} · 少惰主{% endblock %}
 {% block og_type %}article{% endblock %}
 {% block structured_data %}
@@ -7,10 +7,29 @@
 {% endblock %}
 {% block content %}
   <main class="shell detail-page article-page">
-    <p class="eyebrow">ARTICLE · {{ page.published_on }} · {{ page.reading_minutes }} MIN</p>
+    <p class="eyebrow">ARTICLE · {{ page.published_on }} · {{ page.effective_reading_minutes }} MIN</p>
     <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
+    {% if page.cover_image %}
+      {% image page.cover_image width-1600 as cover %}
+      <figure class="article-cover"><img src="{{ cover.url }}" width="{{ cover.width }}" height="{{ cover.height }}" alt="{{ page.cover_image.description|default:page.title }}"></figure>
+    {% endif %}
     {% item_actions "article" page.pk %}
     {% if page.project %}<p>所属项目：<a href="{{ page.project.url }}">{{ page.project.title }}</a></p>{% endif %}
     <div class="prose reading-surface">{% include "content/_body.html" with body=page.body %}</div>
+    {% if page.reference_entries %}
+      <section class="article-references" aria-labelledby="article-references-title">
+        <h2 id="article-references-title">参考资料</h2>
+        <ol>
+          {% for reference in page.reference_entries %}
+            <li>
+              {% if reference.identifier %}<strong>{{ reference.identifier }}</strong> · {% endif %}{{ reference.title_zh }}{% if reference.edition %}（{{ reference.edition }}）{% endif %}
+              {% if reference.clauses %}；条文 {{ reference.clauses|join:"、" }}{% endif %}
+              {% if reference.page_ranges %}；页码 {{ reference.page_ranges|join:"、" }}{% endif %}
+              {% if reference.source_url %}；<a href="{{ reference.source_url }}" rel="noopener noreferrer">来源</a>{% endif %}
+            </li>
+          {% endfor %}
+        </ol>
+      </section>
+    {% endif %}
   </main>
 {% endblock %}

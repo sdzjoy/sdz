@@ -1,0 +1,5 @@
+<aside class="external-resource-card">
+  <p><a href="{{ value.url }}" rel="noopener noreferrer">{{ value.title }}</a></p>
+  {% if value.provider or value.version %}<p>{% if value.provider %}{{ value.provider }}{% endif %}{% if value.version %} · {{ value.version }}{% endif %}</p>{% endif %}
+  {% if value.description %}<p>{{ value.description }}</p>{% endif %}
+</aside>

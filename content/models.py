@@ -1,14 +1,44 @@
+import math
+import re
 from datetime import date
 
 from django.db import models
+from django.utils.functional import cached_property
+from django.utils.html import strip_tags
 from modelcluster.fields import ParentalManyToManyField
-from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.fields import StreamField
 from wagtail.models import Page
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 from .blocks import BODY_BLOCKS
+
+CJK_CHARACTER_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
+LATIN_WORD_RE = re.compile(r"\b[A-Za-z0-9][A-Za-z0-9'-]*\b")
+
+
+def _stream_text(value):
+    """Yield readable text from StreamField values without loading linked files."""
+    if value is None:
+        return
+    if isinstance(value, str):
+        yield strip_tags(value)
+        return
+    if hasattr(value, "source") and isinstance(value.source, str):
+        yield strip_tags(value.source)
+        return
+    if hasattr(value, "items"):
+        for key, child in value.items():
+            if key != "editor_note":
+                yield from _stream_text(child)
+        return
+    if isinstance(value, (list, tuple)) or hasattr(value, "__iter__"):
+        try:
+            for child in value:
+                yield from _stream_text(getattr(child, "value", child))
+        except TypeError:
+            return
 
 
 @register_snippet
@@ -130,8 +160,21 @@ class ArticleIndexPage(Page):
 class ArticlePage(Page):
     summary = models.CharField("摘要", max_length=280)
     published_on = models.DateField("文章日期", default=date.today)
-    reading_minutes = models.PositiveSmallIntegerField("预计阅读分钟", default=8)
+    reading_minutes = models.PositiveSmallIntegerField(
+        "阅读分钟（人工覆盖）",
+        null=True,
+        blank=True,
+        help_text="留空时根据正文自动估算。",
+    )
     featured = models.BooleanField("首页推荐", default=False)
+    cover_image = models.ForeignKey(
+        "wagtailimages.Image",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+        verbose_name="封面图",
+    )
     project = models.ForeignKey(
         ProjectPage,
         on_delete=models.PROTECT,
@@ -147,12 +190,21 @@ class ArticlePage(Page):
     subpage_types = []
     content_panels = Page.content_panels + [
         FieldPanel("summary"),
-        FieldPanel("published_on"),
-        FieldPanel("reading_minutes"),
-        FieldPanel("featured"),
-        FieldPanel("project"),
-        FieldPanel("topics"),
+        FieldPanel("cover_image"),
         FieldPanel("body"),
+    ]
+    settings_panels = [
+        MultiFieldPanel(
+            [
+                FieldPanel("published_on"),
+                FieldPanel("project"),
+                FieldPanel("topics"),
+                FieldPanel("featured"),
+                FieldPanel("reading_minutes"),
+            ],
+            heading="文章资料",
+        ),
+        *Page.settings_panels,
     ]
     search_fields = Page.search_fields + [
         index.SearchField("summary", boost=2),
@@ -165,6 +217,44 @@ class ArticlePage(Page):
     @property
     def timeline_date(self):
         return self.published_on
+
+    @cached_property
+    def estimated_reading_minutes(self):
+        text = " ".join(part for part in _stream_text(self.body) if part)
+        chinese_characters = len(CJK_CHARACTER_RE.findall(text))
+        latin_words = len(LATIN_WORD_RE.findall(text))
+        return max(1, math.ceil(chinese_characters / 350 + latin_words / 180))
+
+    @property
+    def effective_reading_minutes(self):
+        return self.reading_minutes or self.estimated_reading_minutes
+
+    @cached_property
+    def reference_entries(self):
+        """Return article references, merging repeated sources and cited locations."""
+        references = {}
+        for block in self.body:
+            if block.block_type != "reference":
+                continue
+            value = dict(block.value)
+            key = (
+                str(value.get("identifier") or "").strip().casefold(),
+                str(value.get("edition") or "").strip().casefold(),
+                str(value.get("title_zh") or "").strip().casefold(),
+            )
+            if key not in references:
+                value.pop("editor_note", None)
+                value["clauses"] = []
+                value["page_ranges"] = []
+                references[key] = value
+            reference = references[key]
+            clause = str(value.get("clause") or "").strip()
+            pages = str(value.get("pages") or "").strip()
+            if clause and clause not in reference["clauses"]:
+                reference["clauses"].append(clause)
+            if pages and pages not in reference["page_ranges"]:
+                reference["page_ranges"].append(pages)
+        return list(references.values())
 
 
 class NoteIndexPage(Page):

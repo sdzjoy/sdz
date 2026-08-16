@@ -3,6 +3,7 @@ Wagtail==7.4.2
 django-allauth[idp-oidc,mfa]==65.18.0
 markdown-it-py==4.2.0
 nh3==0.3.6
+latex2mathml==3.81.0
 openpyxl==3.1.5
 defusedxml==0.7.1
 gunicorn==26.0.0

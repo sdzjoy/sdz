@@ -1,4 +1,4 @@
 <figure class="code-block">
   {% if value.caption %}<figcaption>{{ value.caption }}</figcaption>{% endif %}
-  <pre data-language="{{ value.language }}"><code>{{ value.code }}</code></pre>
+  <pre data-language="{{ value.language }}"{% if value.show_line_numbers %} class="has-line-numbers"{% endif %}><code>{{ value.code }}</code></pre>
 </figure>
