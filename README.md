@@ -64,3 +64,18 @@ docker compose -f compose.production.yml --profile restore-drill run --rm restor
 
 每次演练会验证文件校验和、恢复迁移记录与抽样用户数据，并把结果写入备份卷的
 `drills/` 目录。任何生产数据库恢复都不由自动回滚脚本执行，需在维护窗口内人工确认。
+
+## 受保护预览环境
+
+预览环境在独立 Compose 项目中运行，并额外加载 `compose.preview.yml`。它使用独立的
+PostgreSQL、媒体卷、网络和本机回环端口；Cloudflare Tunnel 令牌只保存在服务器的
+`private/tunnel-token`，不得提交到 Git。
+
+```sh
+docker compose -f compose.production.yml -f compose.preview.yml config
+docker compose -f compose.production.yml -f compose.preview.yml up -d
+```
+
+服务器 `.env` 应将 `DJANGO_ALLOWED_HOSTS`、`DJANGO_CSRF_TRUSTED_ORIGINS`、
+`PUBLIC_SITE_ORIGIN`、`TURNSTILE_EXPECTED_HOSTNAMES` 和 `SDZJOY_PORT` 设置为预览环境的
+独立值。预览域名必须先通过 Cloudflare Access 保护，再创建公开 DNS 路由。

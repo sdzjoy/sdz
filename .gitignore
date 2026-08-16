@@ -14,6 +14,7 @@ staticfiles/
 var/*
 !var/.gitkeep
 .deployment-state/
+private/
 ops/backup/empty-ssh/*
 !ops/backup/empty-ssh/.gitkeep
 ops/backup/empty-age/*
