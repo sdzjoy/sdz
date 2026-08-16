@@ -127,8 +127,8 @@ services:
       - ./ops/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
     tmpfs:
       - /tmp:size=32m,mode=1777
-      - /var/cache/nginx:size=32m,mode=0755
-      - /var/run:size=4m,mode=0755
+      - /var/cache/nginx:size=32m,mode=0700,uid=101,gid=101
+      - /var/run:size=4m,mode=0700,uid=101,gid=101
     ports:
       - "127.0.0.1:${SDZJOY_PORT:-8080}:8080"
     depends_on:
