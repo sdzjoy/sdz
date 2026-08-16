@@ -1,5 +1,16 @@
 {% extends "base.html" %}
+
 {% block title %}通知偏好 · 少惰主{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
-{% block content %}<main class="page-shell page-shell--narrow"><header class="page-hero page-hero--compact"><p class="eyebrow">PREFERENCES</p><h1>通知偏好</h1><p>站内通知始终保留；这里控制哪些变化会发送到邮箱。</p></header><form class="account-panel" method="post">{% csrf_token %}{{ form.as_p }}<button class="button" type="submit">立即保存</button></form></main>{% endblock %}
 
+{% block content %}
+  <main class="page-shell page-shell--narrow account-page">
+    <header class="page-hero page-hero--compact">
+      <p class="eyebrow">ACCOUNT · PREFERENCES</p>
+      <h1>通知偏好</h1>
+      <p class="lede">站内通知始终保留；这里仅控制哪些变化还会发送到邮箱。</p>
+      <nav class="context-links" aria-label="账号通知导航"><a href="{% url 'notifications:inbox' %}">站内通知</a><a href="{% url 'notifications:saved_items' %}">收藏与订阅</a><a href="{% url 'account_center' %}">账号中心</a></nav>
+    </header>
+    <form class="account-panel preference-form" method="post">{% csrf_token %}{{ form.as_p }}<button class="button button--primary" type="submit">保存通知偏好</button></form>
+  </main>
+{% endblock %}

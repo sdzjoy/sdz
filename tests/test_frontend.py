@@ -48,6 +48,36 @@ def test_brand_assets_are_discoverable():
     assert 'font-family: var(--font-sans);' in editorial_css
 
 
+def test_signup_uses_the_same_editorial_system_as_the_public_site(client):
+    response = client.get("/account/signup/")
+    document = response.content.decode()
+
+    assert response.status_code == 200
+    assert "注册少惰主账号" in document
+    assert 'class="auth-layout"' in document
+    assert 'href="/static/css/editorial.css"' in document
+    assert '<meta name="theme-color" content="#faf9f5">' in document
+
+
+@pytest.mark.parametrize(
+    ("path", "heading", "empty_state"),
+    [
+        ("/articles/", "文章", "文章正在逐篇整理"),
+        ("/projects/", "项目", "项目记录正在脱敏整理"),
+        ("/notes/", "随记", "第一批随记正在整理"),
+        ("/tools/", "工具", "工具目录正在建立"),
+    ],
+)
+def test_content_indexes_use_the_editorial_masthead(client, path, heading, empty_state):
+    response = client.get(path)
+    document = response.content.decode()
+
+    assert response.status_code == 200
+    assert heading in document
+    assert empty_state in document
+    assert 'class="index-masthead"' in document
+
+
 def test_homepage_only_surfaces_published_content(client):
     project_index = ProjectIndexPage.objects.get(depth=3)
     publish(

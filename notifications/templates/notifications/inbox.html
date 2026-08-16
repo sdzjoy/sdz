@@ -1,5 +1,31 @@
 {% extends "base.html" %}
+
 {% block title %}站内通知 · 少惰主{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
-{% block content %}<main class="page-shell page-shell--narrow"><header class="page-hero page-hero--compact"><p class="eyebrow">ACCOUNT</p><h1>站内通知</h1><p><a href="{% url 'notifications:preferences' %}">通知偏好</a> · <a href="{% url 'notifications:saved_items' %}">收藏与订阅</a></p></header><div class="record-grid">{% for item in notifications %}<article class="record-card{% if not item.read_at %} record-card--unread{% endif %}"><span class="scope-badge">{% if item.read_at %}已读{% else %}新通知{% endif %}</span><h2>{{ item.title }}</h2><p>{{ item.body }}</p><form method="post" action="{% url 'notifications:mark_read' item.pk %}">{% csrf_token %}<button class="button button--ghost" type="submit">{% if item.url %}查看详情{% else %}标为已读{% endif %}</button></form></article>{% empty %}<section class="empty-state"><h2>暂时没有通知</h2><p>订阅规范、资源或主题后，相关变化会出现在这里。</p></section>{% endfor %}</div></main>{% endblock %}
 
+{% block content %}
+  <main class="page-shell page-shell--narrow account-page">
+    <header class="page-hero page-hero--compact">
+      <p class="eyebrow">ACCOUNT · NOTIFICATIONS</p>
+      <h1>站内通知</h1>
+      <p class="lede">你订阅的规范、资源和主题发生变化时，会先出现在这里。</p>
+      <nav class="context-links" aria-label="账号通知导航">
+        <a href="{% url 'notifications:saved_items' %}">收藏与订阅</a>
+        <a href="{% url 'notifications:preferences' %}">通知偏好</a>
+        <a href="{% url 'account_center' %}">账号中心</a>
+      </nav>
+    </header>
+    <div class="record-grid notification-grid">
+      {% for item in notifications %}
+        <article class="record-card{% if not item.read_at %} record-card--unread{% endif %}">
+          <div class="record-card__head"><span class="scope-badge">{% if item.read_at %}已读{% else %}新通知{% endif %}</span></div>
+          <h2>{{ item.title }}</h2>
+          <p>{{ item.body }}</p>
+          <form method="post" action="{% url 'notifications:mark_read' item.pk %}">{% csrf_token %}<button class="button button--ghost" type="submit">{% if item.url %}查看详情{% else %}标为已读{% endif %}</button></form>
+        </article>
+      {% empty %}
+        <section class="empty-state"><p class="eyebrow">ALL CAUGHT UP</p><h2>暂时没有通知</h2><p>订阅规范、资源或主题后，相关变化会出现在这里。</p></section>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

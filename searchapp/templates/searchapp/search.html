@@ -5,12 +5,13 @@
 <main class="page-shell page-shell--narrow">
   <header class="page-hero page-hero--compact">
     <p class="eyebrow">SEARCH</p><h1>统一搜索</h1>
-    <p>项目、文章、随记、规范与资源，在一个入口内按你的会员权限检索。</p>
+    <p class="lede">项目、文章、随记、规范与资源，在一个入口内按你的会员权限检索。</p>
+    <nav class="context-links" aria-label="可搜索栏目"><a href="/standards/">规范</a><a href="/resources/">资源</a><a href="/articles/">文章</a><a href="/projects/">项目</a></nav>
   </header>
   <form class="catalog-search" method="get" action="{% url 'searchapp:search' %}">
     <label class="sr-only" for="site-search">搜索内容</label>
     <input id="site-search" type="search" name="q" value="{{ query }}" maxlength="160" placeholder="输入规范编号、文章主题或资源名称" required>
-    <button class="button" type="submit">搜索</button>
+    <button class="button button--primary" type="submit">开始搜索</button>
   </form>
   {% if degraded %}
     <section class="notice-card"><h2>搜索暂时不可用</h2><p>浏览栏目仍然正常，你可以先从规范、资源、文章或项目栏目进入。</p></section>

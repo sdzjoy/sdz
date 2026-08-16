@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% block title %}项目 · 少惰主{% endblock %}
 {% block content %}
-  <main class="shell listing-page">
-    <p class="eyebrow">PROJECTS</p><h1 class="section-title">项目</h1>
-    {% if page.intro %}<p class="lede">{{ page.intro }}</p>{% endif %}
+  <main class="shell listing-page content-index-page">
+    <header class="index-masthead">
+      <div><p class="eyebrow">PROJECTS</p><h1 class="section-title">项目</h1></div>
+      <div class="index-masthead__aside">
+        <p class="lede">{% if page.intro %}{{ page.intro }}{% else %}从真实问题出发，保留环境、约束、判断、实施和验证结果，而不只展示最后一张完成图。{% endif %}</p>
+        <p class="index-count"><span>{{ projects|length|stringformat:"02d" }}</span> 个已公开</p>
+      </div>
+    </header>
     <div class="card-grid">
-      {% for item in projects %}{% include "content/_card.html" with item=item type_label="项目" %}{% empty %}<p>项目内容正在整理。</p>{% endfor %}
+      {% for item in projects %}{% include "content/_card.html" with item=item type_label="项目" %}{% empty %}<section class="empty-state"><p class="eyebrow">CASEWORK IN PROGRESS</p><h2>项目记录正在脱敏整理</h2><p>真实项目需要先移除客户、地址、容量和内部系统等敏感信息，确认后再公开。</p></section>{% endfor %}
     </div>
   </main>
 {% endblock %}

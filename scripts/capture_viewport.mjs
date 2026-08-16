@@ -101,6 +101,13 @@ try {
   await loaded;
   await delay(500);
 
+  if (colorScheme === "dark") {
+    await send("Runtime.evaluate", {
+      expression: 'document.documentElement.dataset.theme = "dark"',
+    });
+    await delay(100);
+  }
+
   const screenshot = await send("Page.captureScreenshot", {
     format: "png",
     fromSurface: true,

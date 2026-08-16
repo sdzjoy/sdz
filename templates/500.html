@@ -4,9 +4,7 @@
 
 {% block content %}
   <main class="shell error-page">
-    <p class="eyebrow">500 · TEMPORARILY UNAVAILABLE</p>
-    <h1>服务暂时不可用</h1>
-    <p class="lede">系统没有完成这次请求。请稍后重试。</p>
-    <a class="text-link" href="/">返回首页</a>
+    <p class="error-code" aria-hidden="true">500</p>
+    <div class="error-copy"><p class="eyebrow">TEMPORARILY UNAVAILABLE</p><h1>服务暂时不可用</h1><p class="lede">系统没有完成这次请求。请稍后重试。</p><a class="text-link" href="/">返回首页 <span aria-hidden="true">→</span></a></div>
   </main>
 {% endblock %}

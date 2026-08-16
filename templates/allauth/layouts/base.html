@@ -4,16 +4,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark light">
-    <meta name="theme-color" content="#071419">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#faf9f5">
     <meta name="robots" content="noindex,nofollow">
     <title>{% block head_title %}账号{% endblock %} · 少惰主</title>
     <link rel="icon" href="{% static 'img/mark.svg' %}" type="image/svg+xml">
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editorial.css' %}">
     {% block extra_head %}{% endblock %}
     <script src="{% static 'js/site.js' %}" defer></script>
   </head>
-  <body>
+  <body class="auth-layout">
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     {% include "includes/site_header.html" %}
     <main class="auth-shell" id="main-content" tabindex="-1">

@@ -15,6 +15,7 @@
   --clay: #d97757;
   --clay-dark: #bd5d3f;
   --olive: #788c5d;
+  --positive: #536641;
   --line: rgb(20 20 19 / 16%);
   --line-strong: rgb(20 20 19 / 42%);
   --surface: #fff;
@@ -53,6 +54,7 @@
   --ink: #f4f1e8;
   --muted: #c3bfb5;
   --faint: #9d988e;
+  --positive: #afc592;
   --line: rgb(244 241 232 / 16%);
   --line-strong: rgb(244 241 232 / 40%);
   --surface: #25231f;
@@ -407,7 +409,7 @@ a {
 
 .manifesto-section {
   padding-block: var(--section-space);
-  color: #171612;
+  color: var(--ink);
   background: var(--paper-warm);
 }
 
@@ -913,7 +915,7 @@ a {
 
 .scope-badge--domestic,
 .verification--ok {
-  color: #536641;
+  color: var(--positive);
   border-color: #788c5d;
   background: transparent;
 }
@@ -1451,5 +1453,635 @@ a {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* System-wide refinement */
+
+html {
+  scroll-padding-top: 6rem;
+  scrollbar-color: var(--line-strong) var(--paper);
+}
+
+body {
+  min-width: 20rem;
+  overflow-x: clip;
+}
+
+main,
+.auth-shell {
+  isolation: isolate;
+}
+
+a,
+button,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.site-header {
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.site-header.is-scrolled {
+  border-bottom-color: var(--line-strong);
+  background: color-mix(in srgb, var(--paper) 98%, transparent);
+  box-shadow: 0 8px 24px rgb(20 20 19 / 4%);
+}
+
+:root[data-theme="dark"] .site-header.is-scrolled {
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+}
+
+.nav-toggle {
+  min-height: 2.25rem;
+  font-size: 0;
+}
+
+.nav-toggle > span[aria-hidden="true"] {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.theme-toggle[aria-pressed="true"] {
+  color: var(--clay);
+}
+
+.subsite-switcher[open] summary {
+  color: var(--clay-dark);
+}
+
+.subsite-switcher[open] summary::after {
+  content: "⌃";
+}
+
+.index-masthead {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.42fr) minmax(0, 1fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  margin-bottom: clamp(4rem, 8vw, 7rem);
+  padding: 1rem 0 clamp(3rem, 6vw, 5.5rem);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.index-masthead .section-title {
+  margin: clamp(1.6rem, 4vw, 4rem) 0 0;
+}
+
+.index-masthead__aside {
+  display: grid;
+  align-content: space-between;
+  gap: 3rem;
+  min-height: 15rem;
+  padding-top: clamp(2.6rem, 5vw, 5rem);
+}
+
+.index-masthead__aside .lede {
+  max-width: 47rem;
+  margin: 0;
+}
+
+.index-count {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--type-ui);
+}
+
+.index-count span {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 2.2vw, 2.6rem);
+  line-height: 1;
+}
+
+.content-index-page .card-grid {
+  margin-top: 0;
+}
+
+.card-grid > .empty-state,
+.record-grid > .empty-state,
+.record-list > .empty-state {
+  grid-column: 1 / -1;
+}
+
+.empty-state > p:not(.eyebrow) {
+  max-width: 44rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.empty-state .text-link {
+  margin-top: 1rem;
+}
+
+.content-card,
+.record-card {
+  position: relative;
+  box-shadow: inset 0 3px 0 transparent;
+}
+
+.content-card:hover,
+.record-card:hover {
+  box-shadow: inset 0 3px 0 var(--clay);
+}
+
+.content-card h2 a,
+.record-card h2 a,
+.record-card h3 a {
+  text-decoration: none;
+}
+
+.content-card:hover h2 a,
+.record-card:hover h2 a,
+.record-card:hover h3 a {
+  color: var(--clay-dark);
+}
+
+.content-card__meta,
+.record-card__head,
+.record-facts,
+.content-card__foot,
+.record-card__foot {
+  font-size: var(--type-caption);
+  letter-spacing: 0.025em;
+}
+
+.record-card__foot,
+.content-card__foot {
+  margin-top: auto;
+}
+
+.page-hero--compact {
+  display: grid;
+  gap: 1.2rem;
+  margin-bottom: clamp(3rem, 7vw, 6rem);
+  padding: 1rem 0 clamp(2.75rem, 6vw, 5rem);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.page-hero--compact h1 {
+  margin: clamp(1.5rem, 4vw, 3.5rem) 0 0;
+}
+
+.page-hero--compact .lede {
+  max-width: 48rem;
+  margin: 0;
+}
+
+.context-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: center;
+  margin-top: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-ui);
+}
+
+.context-links a {
+  color: var(--ink);
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.35em;
+}
+
+.context-links a:hover {
+  color: var(--clay-dark);
+}
+
+.catalog-search {
+  margin-bottom: clamp(3rem, 7vw, 6rem);
+  padding-block: 1.25rem;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.catalog-search input {
+  min-height: 52px;
+  padding-inline: 1rem;
+  border-color: var(--line-strong);
+  border-radius: 0;
+  font-size: 1rem;
+}
+
+.catalog-search .button {
+  min-height: 52px;
+}
+
+.detail-page > .eyebrow,
+.catalog-detail > .eyebrow {
+  display: block;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.detail-page > .detail-title,
+.catalog-detail > .detail-title {
+  margin: clamp(2rem, 5vw, 5rem) 0 1.5rem;
+}
+
+.detail-page > .lede,
+.catalog-detail > .lede {
+  max-width: 52rem;
+  margin-bottom: 2rem;
+}
+
+.detail-page > .item-actions,
+.catalog-detail > .item-actions {
+  padding-block: 1rem;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.detail-page > .prose {
+  margin-top: clamp(4rem, 8vw, 7rem);
+}
+
+.record-code--large {
+  margin: clamp(2.5rem, 5vw, 4.5rem) 0 -1.5rem;
+  font-size: clamp(1rem, 1vw + 0.8rem, 1.4rem);
+  letter-spacing: 0.06em;
+}
+
+.record-copy {
+  max-width: 58rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line-strong);
+}
+
+.record-copy h2,
+.record-copy h3 {
+  font-size: var(--type-card-title);
+}
+
+.record-copy p {
+  color: var(--muted);
+  line-height: 1.82;
+}
+
+.boundary-note {
+  max-width: 58rem;
+  line-height: 1.72;
+}
+
+.fact-grid dt,
+.record-facts,
+.catalog-summary,
+.version-list small,
+.mirror-grid small {
+  font-family: var(--font-sans);
+}
+
+.fact-grid dd,
+.version-list p,
+.evidence-list p,
+.mirror-grid p {
+  line-height: 1.7;
+}
+
+.filter-panel input,
+.filter-panel select,
+.auth-panel input,
+.auth-panel textarea,
+.auth-panel select,
+.feedback-panel select,
+.feedback-panel textarea,
+.account-panel input,
+.account-panel textarea,
+.account-panel select {
+  min-height: 48px;
+  font-size: 1rem;
+}
+
+.filter-panel .button {
+  min-height: 48px;
+}
+
+.filter-panel label > span {
+  font-size: var(--type-caption);
+  letter-spacing: 0.04em;
+}
+
+.account-dashboard {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(3rem, 8vw, 8rem);
+  margin-bottom: clamp(5rem, 10vw, 9rem);
+}
+
+.account-dashboard > section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.account-facts,
+.account-actions {
+  max-width: none;
+  margin-top: 2rem;
+}
+
+.account-facts div {
+  padding-block: 0.85rem;
+}
+
+.account-actions {
+  gap: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.account-actions a {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.85rem;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+  font-family: var(--font-sans);
+  text-decoration: none;
+}
+
+.account-actions a:hover {
+  padding-left: 0.5rem;
+  color: var(--clay-dark);
+}
+
+.danger-zone {
+  grid-template-columns: minmax(16rem, 1fr) repeat(3, auto);
+  gap: 1rem;
+  align-items: end;
+  max-width: none;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.danger-zone > div p:last-child {
+  max-width: 28rem;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: var(--type-ui);
+}
+
+.danger-zone h2 {
+  margin: 0.5rem 0;
+  font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+}
+
+.danger-zone form {
+  margin: 0;
+}
+
+.danger-zone button,
+.auth-panel button {
+  border: 1px solid var(--ink);
+}
+
+.danger-zone .button--ghost {
+  color: var(--ink);
+  background: transparent;
+}
+
+.danger-zone .button--ghost:hover {
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.button--danger,
+.danger-zone .button--danger {
+  color: #fff;
+  border-color: #8c2f24;
+  background: #8c2f24;
+}
+
+.button--danger:hover,
+.danger-zone .button--danger:hover {
+  border-color: #6f2119;
+  background: #6f2119;
+}
+
+.account-page .page-hero--compact {
+  margin-bottom: clamp(3rem, 7vw, 6rem);
+}
+
+.saved-section + .saved-section {
+  margin-top: clamp(4rem, 8vw, 7rem);
+}
+
+.notification-grid .record-card {
+  min-height: 18rem;
+}
+
+.record-card--unread {
+  box-shadow: inset 0 3px 0 var(--clay);
+}
+
+.preference-form {
+  max-width: 48rem;
+}
+
+.preference-form > p,
+.auth-panel form > p {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.preference-form label,
+.auth-panel label {
+  font-family: var(--font-sans);
+  font-size: var(--type-ui);
+  font-weight: 600;
+}
+
+.auth-layout .auth-shell {
+  width: min(48rem, calc(100% - (var(--page-gutter) * 2)));
+  padding-block: clamp(4rem, 9vw, 8rem);
+}
+
+.auth-layout .auth-panel {
+  position: relative;
+  padding: clamp(2rem, 5vw, 4.5rem);
+  overflow: hidden;
+}
+
+.auth-layout .auth-panel::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--clay);
+  content: "";
+}
+
+.auth-panel .auth-title,
+.auth-panel h1 {
+  margin: 1.5rem 0;
+  font-size: clamp(2.6rem, 5.5vw, 4.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.auth-panel input,
+.auth-panel textarea,
+.auth-panel select {
+  width: 100%;
+  padding: 0.75rem;
+}
+
+.auth-panel ul.errorlist {
+  padding: 0.75rem 1rem;
+  color: #8c2f24;
+  border-left: 2px solid #8c2f24;
+  background: color-mix(in srgb, #8c2f24 8%, transparent);
+  list-style: none;
+}
+
+.auth-panel .helptext,
+.auth-panel form + p {
+  color: var(--muted);
+  font-size: var(--type-ui);
+}
+
+.error-page {
+  grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  align-items: center;
+  justify-items: stretch;
+  min-height: calc(100vh - 80px);
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+
+.error-code {
+  margin: 0;
+  color: var(--clay);
+  font-family: var(--font-serif);
+  font-size: clamp(8rem, 21vw, 20rem);
+  font-weight: 400;
+  line-height: 0.75;
+  letter-spacing: -0.08em;
+}
+
+.error-copy {
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.error-copy h1 {
+  margin: 2rem 0 1rem;
+  font-size: clamp(2.6rem, 4.8vw, 4.8rem);
+  line-height: 1.08;
+}
+
+.error-copy .text-link {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .index-masthead,
+  .account-dashboard,
+  .error-page {
+    grid-template-columns: 1fr;
+  }
+
+  .index-masthead {
+    gap: 1rem;
+  }
+
+  .index-masthead__aside {
+    min-height: auto;
+    padding-top: 0;
+  }
+
+  .danger-zone {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .danger-zone > div {
+    grid-column: 1 / -1;
+  }
+
+  .danger-zone .button {
+    width: 100%;
+    height: 100%;
+  }
+
+  .error-page {
+    gap: 4rem;
+    align-content: center;
+  }
+
+  .error-code {
+    font-size: clamp(8rem, 38vw, 15rem);
+  }
+}
+
+@media (max-width: 680px) {
+  .site-header.is-scrolled {
+    box-shadow: none;
+  }
+
+  .index-masthead {
+    margin-bottom: 3.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .index-masthead .section-title {
+    margin-top: 1.5rem;
+  }
+
+  .index-masthead__aside {
+    gap: 2rem;
+  }
+
+  .page-hero--compact h1 {
+    font-size: clamp(2.8rem, 13vw, 4rem);
+  }
+
+  .context-links {
+    gap: 0.65rem 1.1rem;
+  }
+
+  .catalog-search {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-search .button {
+    width: 100%;
+  }
+
+  .detail-page > .detail-title,
+  .catalog-detail > .detail-title {
+    margin-top: 2.5rem;
+  }
+
+  .danger-zone {
+    grid-template-columns: 1fr;
+  }
+
+  .danger-zone > div {
+    grid-column: auto;
+  }
+
+  .account-facts div {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+
+  .auth-layout .auth-panel {
+    padding: 2rem 1.25rem;
+  }
+
+  .error-page {
+    gap: 3rem;
+  }
+
+  .error-code {
+    font-size: clamp(7rem, 45vw, 11rem);
   }
 }
