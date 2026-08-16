@@ -41,13 +41,13 @@ def test_existing_standard_links_are_repointed_without_losing_rows():
     relation_rows = (
         (
             "standards_standard_related_articles",
-            "article_id",
+            "standards_standard_publishing_articles",
             "articlepage_id",
             article.legacy_source_id,
         ),
         (
             "standards_standard_related_tools",
-            "tool_id",
+            "standards_standard_publishing_tools",
             "toolpage_id",
             tool.legacy_source_id,
         ),
@@ -56,19 +56,31 @@ def test_existing_standard_links_are_repointed_without_losing_rows():
     connection.disable_constraint_checking()
     try:
         with connection.cursor() as cursor:
-            for table, current_column, retired_column, source_id in relation_rows:
+            for legacy_table, _, retired_column, source_id in relation_rows:
                 cursor.execute(
-                    f"ALTER TABLE {quote(table)} RENAME COLUMN "
-                    f"{quote(current_column)} TO {quote(retired_column)}"
+                    f"CREATE TABLE {quote(legacy_table)} ("
+                    f"id integer PRIMARY KEY, standard_id bigint NOT NULL, "
+                    f"{quote(retired_column)} bigint NOT NULL)"
                 )
                 cursor.execute(
-                    f"INSERT INTO {quote(table)} (standard_id, {quote(retired_column)}) "  # noqa: S608
+                    f"INSERT INTO {quote(legacy_table)} "  # noqa: S608
+                    f"(standard_id, {quote(retired_column)}) "
                     "VALUES (%s, %s)",
                     [standard.pk, source_id],
                 )
         with connection.schema_editor() as schema_editor:
             conversion.create_or_repoint_relations(apps, schema_editor)
+        with connection.cursor() as cursor:
+            for legacy_table, _, retired_column, source_id in relation_rows:
+                cursor.execute(
+                    f"SELECT standard_id, {quote(retired_column)} "  # noqa: S608
+                    f"FROM {quote(legacy_table)}"
+                )
+                assert cursor.fetchall() == [(standard.pk, source_id)]
     finally:
+        with connection.cursor() as cursor:
+            for legacy_table, _, _, _ in relation_rows:
+                cursor.execute(f"DROP TABLE {quote(legacy_table)}")
         connection.enable_constraint_checking()
 
     standard.refresh_from_db()

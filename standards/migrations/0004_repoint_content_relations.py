@@ -1,17 +1,19 @@
+# ruff: noqa: S608 -- table and column names are fixed constants and backend-quoted
 from django.db import migrations, models
-
 
 RELATIONS = (
     {
         "field": "related_articles",
-        "table": "standards_standard_related_articles",
+        "legacy_table": "standards_standard_related_articles",
+        "target_table": "standards_standard_publishing_articles",
         "old_column": "articlepage_id",
         "new_column": "article_id",
         "kind": "article",
     },
     {
         "field": "related_tools",
-        "table": "standards_standard_related_tools",
+        "legacy_table": "standards_standard_related_tools",
+        "target_table": "standards_standard_publishing_tools",
         "old_column": "toolpage_id",
         "new_column": "tool_id",
         "kind": "tool",
@@ -33,20 +35,21 @@ def create_or_repoint_relations(apps, schema_editor):
     with connection.cursor() as cursor:
         for relation in RELATIONS:
             through = Standard._meta.get_field(relation["field"]).remote_field.through
-            if relation["table"] not in existing_tables:
+            if relation["target_table"] not in existing_tables:
                 schema_editor.create_model(through)
+                existing_tables.add(relation["target_table"])
+
+            if relation["legacy_table"] not in existing_tables:
                 continue
 
-            columns = _columns(connection, cursor, relation["table"])
-            if relation["new_column"] in columns:
-                continue
+            columns = _columns(connection, cursor, relation["legacy_table"])
             if relation["old_column"] not in columns:
-                raise RuntimeError(f"{relation['table']} 的旧关系列无法识别；已停止迁移。")
+                raise RuntimeError(f"{relation['legacy_table']} 的旧关系列无法识别；已停止迁移。")
 
             cursor.execute(
                 f"""
                 SELECT COUNT(*)
-                FROM {quote(relation["table"])} AS legacy
+                FROM {quote(relation["legacy_table"])} AS legacy
                 LEFT JOIN publishing_contententry AS entry
                   ON entry.legacy_source_id = legacy.{quote(relation["old_column"])}
                  AND entry.kind = %s
@@ -57,32 +60,27 @@ def create_or_repoint_relations(apps, schema_editor):
             missing = cursor.fetchone()[0]
             if missing:
                 raise RuntimeError(
-                    f"{relation['table']} 有 {missing} 条关系找不到已转换内容；已停止迁移。"
+                    f"{relation['legacy_table']} 有 {missing} 条关系找不到已转换内容；已停止迁移。"
                 )
 
-            temporary = f"{relation['table']}__converted"
-            cursor.execute(f"DROP TABLE IF EXISTS {quote(temporary)}")
             cursor.execute(
                 f"""
-                CREATE TEMPORARY TABLE {quote(temporary)} AS
+                INSERT INTO {quote(relation["target_table"])}
+                    (standard_id, {quote(relation["new_column"])})
                 SELECT legacy.standard_id AS standard_id, entry.id AS target_id
-                FROM {quote(relation["table"])} AS legacy
+                FROM {quote(relation["legacy_table"])} AS legacy
                 JOIN publishing_contententry AS entry
                   ON entry.legacy_source_id = legacy.{quote(relation["old_column"])}
                  AND entry.kind = %s
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM {quote(relation["target_table"])} AS target
+                    WHERE target.standard_id = legacy.standard_id
+                      AND target.{quote(relation["new_column"])} = entry.id
+                )
                 """,
                 [relation["kind"]],
             )
-            schema_editor.delete_model(through)
-            schema_editor.create_model(through)
-            cursor.execute(
-                f"""
-                INSERT INTO {quote(relation["table"])}
-                    (standard_id, {quote(relation["new_column"])})
-                SELECT standard_id, target_id FROM {quote(temporary)}
-                """
-            )
-            cursor.execute(f"DROP TABLE {quote(temporary)}")
 
 
 class Migration(migrations.Migration):
@@ -99,6 +97,7 @@ class Migration(migrations.Migration):
                     name="related_articles",
                     field=models.ManyToManyField(
                         blank=True,
+                        db_table="standards_standard_publishing_articles",
                         related_name="related_standards",
                         to="publishing.article",
                         verbose_name="相关文章",
@@ -109,6 +108,7 @@ class Migration(migrations.Migration):
                     name="related_tools",
                     field=models.ManyToManyField(
                         blank=True,
+                        db_table="standards_standard_publishing_tools",
                         related_name="related_standards",
                         to="publishing.tool",
                         verbose_name="相关工具",

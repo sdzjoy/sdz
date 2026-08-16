@@ -96,9 +96,7 @@ class Standard(models.Model):
         default=Jurisdiction.DOMESTIC,
         db_index=True,
     )
-    category = models.CharField(
-        "标准类别", max_length=16, choices=Category.choices, db_index=True
-    )
+    category = models.CharField("标准类别", max_length=16, choices=Category.choices, db_index=True)
     nature = models.CharField(
         "标准性质",
         max_length=16,
@@ -139,12 +137,14 @@ class Standard(models.Model):
         verbose_name="相关文章",
         related_name="related_standards",
         blank=True,
+        db_table="standards_standard_publishing_articles",
     )
     related_tools = models.ManyToManyField(
         "publishing.Tool",
         verbose_name="相关工具",
         related_name="related_standards",
         blank=True,
+        db_table="standards_standard_publishing_tools",
     )
     verification_state = models.CharField(
         "核验状态",
@@ -205,6 +205,7 @@ class Standard(models.Model):
                 errors["verification_state"] = "至少添加一条来源证据后才能标记为已核验。"
         if errors:
             raise ValidationError(errors)
+
 
 class StandardOrganization(models.Model):
     class Role(models.TextChoices):
@@ -294,6 +295,7 @@ class StandardRelation(models.Model):
             if self.pk:
                 relations = relations.exclude(pk=self.pk)
             frontier = set(relations.values_list("target_id", flat=True)) - visited
+
 
 class SourceEvidence(models.Model):
     class SourceKind(models.TextChoices):
