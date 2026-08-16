@@ -1,0 +1,78 @@
+{% extends "studio/base.html" %}
+
+{% block title %}内容 · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header studio-content-header">
+    <div>
+      <p class="studio-eyebrow">内容</p>
+      <h1>{% if in_trash %}回收站{% else %}所有内容{% endif %}</h1>
+      <p>{% if in_trash %}在这里恢复内容；满 30 天后站长才能永久删除。{% else %}搜索、筛选并直接继续编辑，不需要页面树。{% endif %}</p>
+    </div>
+    {% if not in_trash %}<a class="studio-button studio-button-primary" href="{% url 'studio:article_create' %}">写文章</a>{% endif %}
+  </header>
+
+  <nav class="studio-content-tabs" aria-label="内容类型">
+    <a href="{% url 'studio:content_list' %}"{% if not active_kind and not in_trash %} aria-current="page"{% endif %}>全部</a>
+    {% for value, label in kind_choices %}<a href="{% url 'studio:content_list' %}?kind={{ value }}"{% if active_kind == value and not in_trash %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+    <a href="{% url 'studio:content_list' %}?location=trash"{% if in_trash %} aria-current="page"{% endif %}>回收站</a>
+  </nav>
+
+  <form class="studio-filter" method="get">
+    {% if in_trash %}<input type="hidden" name="location" value="trash">{% endif %}
+    {% if active_kind %}<input type="hidden" name="kind" value="{{ active_kind }}">{% endif %}
+    <label class="studio-search-field"><span class="sr-only">搜索内容</span><input type="search" name="q" value="{{ filter_form.q.value|default:'' }}" placeholder="搜索标题或摘要"></label>
+    <select name="status" aria-label="发布状态">
+      {% for value, label in filter_form.fields.status.choices %}<option value="{{ value }}"{% if filter_form.status.value == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button class="studio-button" type="submit">筛选</button>
+    <details class="studio-advanced-filter"{% if advanced_open or filter_form.non_field_errors %} open{% endif %}>
+      <summary>更多筛选</summary>
+      <div>
+        <label>主题<select name="topic"><option value="">全部主题</option>{% for topic in filter_form.fields.topic.queryset %}<option value="{{ topic.pk }}"{% if filter_form.topic.value|stringformat:'s' == topic.pk|stringformat:'s' %} selected{% endif %}>{{ topic.name }}</option>{% endfor %}</select></label>
+        <label>开始日期<input type="date" name="date_from" value="{{ filter_form.date_from.value|default:'' }}"></label>
+        <label>结束日期<input type="date" name="date_to" value="{{ filter_form.date_to.value|default:'' }}"></label>
+        {% for error in filter_form.non_field_errors %}<p class="studio-form-error">{{ error }}</p>{% endfor %}
+      </div>
+    </details>
+  </form>
+
+  <form id="bulk-content-form" method="post" action="{% url 'studio:content_bulk_action' %}">{% csrf_token %}</form>
+    {% if not in_trash %}
+      <div class="studio-bulk-bar">
+        <select name="action" form="bulk-content-form" aria-label="批量操作">
+          <option value="">批量操作</option>
+          <option value="publish">发布</option>
+          <option value="unpublish">取消发布</option>
+          <option value="trash">移入回收站</option>
+        </select>
+        <button class="studio-button" type="submit" form="bulk-content-form">应用</button>
+      </div>
+    {% endif %}
+
+    <div class="studio-content-table" role="table" aria-label="内容列表">
+      <div class="studio-content-row studio-content-row-head" role="row">
+        {% if not in_trash %}<span role="columnheader"><input type="checkbox" data-select-all aria-label="全选本页"></span>{% endif %}
+        <span role="columnheader">内容</span><span role="columnheader">状态</span><span role="columnheader">最后修改</span><span role="columnheader">操作</span>
+      </div>
+      {% for item in content_items %}
+        {% include "studio/content/_rows.html" %}
+      {% empty %}
+        <div class="studio-list-empty"><strong>没有找到内容</strong><p>换一个关键词或筛选条件试试。</p></div>
+      {% endfor %}
+    </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="studio-pagination" aria-label="分页">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">上一页</a>{% endif %}
+      <span>第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span>
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">下一页</a>{% endif %}
+    </nav>
+  {% endif %}
+
+  <script>
+    document.querySelector('[data-select-all]')?.addEventListener('change', (event) => {
+      document.querySelectorAll('input[name="selected"]').forEach((input) => { input.checked = event.currentTarget.checked })
+    })
+  </script>
+{% endblock %}

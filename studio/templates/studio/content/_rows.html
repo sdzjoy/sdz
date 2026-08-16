@@ -1,0 +1,24 @@
+<article class="studio-content-row" role="row">
+  {% if not in_trash %}<span role="cell"><input type="checkbox" name="selected" value="{{ item.pk }}" form="bulk-content-form" aria-label="选择 {{ item.title }}"></span>{% endif %}
+  <div class="studio-content-primary" role="cell">
+    {% if item.kind == 'article' and not in_trash %}<a href="{% url 'studio:article_edit' item.pk %}"><strong>{{ item.title }}</strong></a>{% else %}<strong>{{ item.title }}</strong>{% endif %}
+    <p>{{ item.summary|default:"暂无摘要"|truncatechars:90 }}</p>
+    <div>{% for topic in item.topics.all %}<span class="studio-topic">{{ topic.name }}</span>{% endfor %}</div>
+  </div>
+  <div role="cell"><span class="studio-status studio-status-{{ item.status }}">{% if in_trash %}回收站{% else %}{{ item.get_status_display }}{% endif %}</span></div>
+  <div class="studio-content-date" role="cell"><time datetime="{{ item.updated_at|date:'c' }}">{{ item.updated_at|date:"Y-m-d H:i" }}</time><small>{{ item.author.display_name|default:item.author.email }}</small></div>
+  <div class="studio-row-actions" role="cell">
+    {% if in_trash %}
+      <button class="studio-link-button" type="submit" form="restore-{{ item.pk }}">恢复</button>
+      {% if studio_is_owner %}
+        <details><summary>永久删除</summary><div class="studio-danger-popover"><p>只有进入回收站满 30 天后才能删除。</p><input form="delete-{{ item.pk }}" name="reason" maxlength="500" minlength="5" placeholder="填写删除原因" required><button form="delete-{{ item.pk }}" type="submit">确认永久删除</button></div></details>
+      {% endif %}
+    {% else %}
+      {% if item.status == 'published' %}<a href="{{ item.get_absolute_url }}" target="_blank" rel="noopener">查看</a>{% else %}<span>草稿</span>{% endif %}
+    {% endif %}
+  </div>
+</article>
+{% if in_trash %}
+  <form id="restore-{{ item.pk }}" method="post" action="{% url 'studio:content_restore' item.pk %}">{% csrf_token %}</form>
+  {% if studio_is_owner %}<form id="delete-{{ item.pk }}" method="post" action="{% url 'studio:content_permanent_delete' item.pk %}">{% csrf_token %}</form>{% endif %}
+{% endif %}

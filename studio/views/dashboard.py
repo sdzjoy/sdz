@@ -51,7 +51,7 @@ def dashboard(request):
     return render(request, "studio/dashboard.html", context)
 
 
-def placeholder(request, section):
+def placeholder(request, section, **kwargs):
     title, description, allowed_roles = PLACEHOLDERS[section]
     role = get_studio_role(request.user)
     if role is None or role not in allowed_roles:
