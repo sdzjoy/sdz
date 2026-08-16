@@ -1,0 +1,20 @@
+{% extends "studio/base.html" %}
+
+{% block title %}图片素材 · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header studio-content-header">
+    <div><p class="studio-eyebrow">资料库</p><h1>图片素材</h1><p>上传、查找并确认图片在哪些内容中使用。</p></div>
+    <form method="post" enctype="multipart/form-data" class="asset-upload-form">{% csrf_token %}<label class="studio-button studio-button-primary">上传图片<input type="file" name="image" accept="image/jpeg,image/png,image/webp" required hidden onchange="this.form.submit()"></label></form>
+  </header>
+  <form method="get" class="studio-filter"><label class="studio-search-field"><span class="sr-only">搜索图片</span><input type="search" name="q" value="{{ asset_query }}" placeholder="搜索图片名称或说明"></label><button class="studio-button" type="submit">搜索</button></form>
+  <div class="asset-grid">
+    {% for item in asset_items %}
+      <article class="asset-card">
+        <img src="{{ item.asset.file.url }}" alt="{{ item.asset.alt_text }}" loading="lazy">
+        <div><strong>{{ item.asset.title|default:item.asset.original_name }}</strong><small>{{ item.asset.width }} × {{ item.asset.height }} · {{ item.asset.byte_size|filesizeformat }}</small></div>
+        <div class="asset-card-actions"><button type="button" class="studio-button" onclick="navigator.clipboard.writeText('{{ item.asset.file.url|escapejs }}')">复制地址</button>{% if item.references %}<details><summary>{{ item.references|length }} 处引用</summary><ul>{% for ref in item.references %}<li>{{ ref.type }}「{{ ref.label }}」· {{ ref.locations|join:'、' }}</li>{% endfor %}</ul></details>{% else %}<form method="post" action="{% url 'studio:asset_delete' item.asset.pk %}" onsubmit="return confirm('确定移入素材回收状态吗？')">{% csrf_token %}<button class="studio-button" type="submit">删除</button></form>{% endif %}</div>
+      </article>
+    {% empty %}<div class="studio-list-empty"><strong>还没有图片</strong><p>上传第一张文章配图。</p></div>{% endfor %}
+  </div>
+{% endblock %}

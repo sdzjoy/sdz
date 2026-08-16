@@ -1,7 +1,8 @@
 from django import forms
 
 from publishing.documents import DocumentValidationError, extract_text, validate_document
-from publishing.models import Project, Topic
+from publishing.models import Asset, Project, Topic
+from publishing.uploads import document_asset_references
 
 
 class ArticlePayloadForm(forms.Form):
@@ -36,7 +37,22 @@ class ArticlePayloadForm(forms.Form):
         except DocumentValidationError as error:
             raise forms.ValidationError(str(error)) from error
         self.document_warnings = validated.warnings
-        return validated.as_dict()
+        document = validated.as_dict()
+        references = document_asset_references(document)
+        assets = {
+            asset.pk: asset
+            for asset in Asset.objects.filter(
+                pk__in=references,
+                kind=Asset.Kind.IMAGE,
+                deleted_at__isnull=True,
+            )
+        }
+        if set(references) != set(assets):
+            raise forms.ValidationError("正文包含不存在或已删除的图片素材。")
+        for asset_id, sources in references.items():
+            if sources != {assets[asset_id].file.url}:
+                raise forms.ValidationError("正文图片地址与素材记录不一致。")
+        return document
 
     def clean(self):
         cleaned = super().clean()

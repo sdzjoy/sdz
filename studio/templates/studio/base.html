@@ -26,7 +26,7 @@
             <a href="{% url 'studio:content_list' %}"{% if studio_section == 'content' %} aria-current="page"{% endif %}>内容</a>
           {% endif %}
           {% if studio_can_manage_resources %}
-            <a href="{% url 'studio:assets' %}"{% if studio_section == 'assets' or studio_section == 'resources' %} aria-current="page"{% endif %}>资料库</a>
+            <a href="{% if studio_can_edit_content %}{% url 'studio:assets' %}{% else %}{% url 'studio:resources' %}{% endif %}"{% if studio_section == 'assets' or studio_section == 'resources' %} aria-current="page"{% endif %}>资料库</a>
           {% endif %}
           {% if studio_is_owner %}
             <a href="{% url 'studio:users' %}"{% if studio_section == 'users' %} aria-current="page"{% endif %}>用户</a>

@@ -22,6 +22,10 @@ def _walk(node: dict[str, Any], output: list[str]) -> None:
     if node_type == "hardBreak":
         output.append("\n")
         return
+    if node_type == "image":
+        output.append(node.get("attrs", {}).get("alt", ""))
+        output.append("\n")
+        return
     for child in node.get("content", []):
         _walk(child, output)
     if node_type in BLOCK_NODES:

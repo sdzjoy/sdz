@@ -50,6 +50,7 @@ def _editor_context(request, article=None):
                 "previewUrl": reverse("studio:article_preview", args=(article.pk,))
                 if article
                 else "",
+                "imageUploadUrl": reverse("studio:api_asset_upload"),
             },
         }
     )

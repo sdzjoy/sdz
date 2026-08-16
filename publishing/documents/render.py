@@ -32,6 +32,9 @@ ALLOWED_TAGS = {
     "u",
     "ul",
     "em",
+    "figure",
+    "figcaption",
+    "img",
 }
 ALLOWED_ATTRIBUTES = {
     "a": {"href", "title"},
@@ -40,6 +43,7 @@ ALLOWED_ATTRIBUTES = {
     "ol": {"start"},
     "td": {"colspan", "rowspan"},
     "th": {"colspan", "rowspan"},
+    "img": {"src", "alt", "title", "width", "height", "loading", "decoding"},
 }
 SAFE_LANGUAGE_PATTERN = re.compile(r"^[A-Za-z0-9_+.#-]{1,40}$")
 
@@ -143,6 +147,21 @@ def _render_node(node: dict[str, Any]) -> str:
         return f"<th{_span_attributes(attrs)}>{children}</th>"
     if node_type == "tableCell":
         return f"<td{_span_attributes(attrs)}>{children}</td>"
+    if node_type == "image":
+        source = html.escape(attrs["src"], quote=True)
+        alt = html.escape(attrs.get("alt", ""), quote=True)
+        title = attrs.get("title", "")
+        title_html = f' title="{html.escape(title, quote=True)}"' if title else ""
+        size_html = "".join(
+            f' {name}="{attrs[name]}"'
+            for name in ("width", "height")
+            if attrs.get(name) is not None
+        )
+        caption = f"<figcaption>{html.escape(title)}</figcaption>" if title else ""
+        return (
+            f'<figure><img src="{source}" alt="{alt}"{title_html}{size_html} '
+            f'loading="lazy" decoding="async">{caption}</figure>'
+        )
 
     node_name = html.escape(node_type, quote=True)
     return (

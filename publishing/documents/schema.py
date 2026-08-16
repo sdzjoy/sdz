@@ -33,6 +33,7 @@ KNOWN_NODES = {
     "tableRow",
     "tableHeader",
     "tableCell",
+    "image",
 }
 KNOWN_MARKS = {"bold", "italic", "strike", "underline", "code", "link"}
 
@@ -42,6 +43,7 @@ NODE_ATTRIBUTES = {
     "codeBlock": {"language"},
     "tableCell": {"colspan", "rowspan", "colwidth"},
     "tableHeader": {"colspan", "rowspan", "colwidth"},
+    "image": {"assetId", "src", "alt", "title", "width", "height"},
 }
 MARK_ATTRIBUTES = {
     "link": {"href", "title", "target", "rel", "class"},
@@ -146,6 +148,30 @@ def _validate_known_attributes(node_type: str, attrs: dict[str, Any], path: str)
             )
         ):
             _fail("table_width", "表格列宽数据无效", f"{path}.colwidth")
+    if node_type == "image":
+        asset_id = attrs.get("assetId")
+        src = attrs.get("src")
+        if not isinstance(asset_id, int) or isinstance(asset_id, bool) or asset_id < 1:
+            _fail("image_asset", "图片必须引用有效的站内素材", f"{path}.assetId")
+        if (
+            not isinstance(src, str)
+            or not src.startswith("/media/assets/")
+            or src.startswith("//")
+            or len(src) > 1_000
+        ):
+            _fail("image_src", "图片地址必须来自站内素材库", f"{path}.src")
+        for name in ("alt", "title"):
+            value = attrs.get(name, "")
+            if not isinstance(value, str) or len(value) > 300:
+                _fail("image_text", "图片说明无效", f"{path}.{name}")
+        for name in ("width", "height"):
+            value = attrs.get(name)
+            if value is not None and (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 1 <= value <= 12_000
+            ):
+                _fail("image_size", "图片尺寸无效", f"{path}.{name}")
 
 
 def _validate_mark(mark: Any, path: str, warnings: list[DocumentWarning]) -> None:

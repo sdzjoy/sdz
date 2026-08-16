@@ -6,6 +6,8 @@ from .api.articles import (
     publish_article,
     save_article,
 )
+from .api.assets import delete_image, upload_image
+from .views.assets import asset_library, delete_asset
 from .views.content import (
     bulk_content_action,
     content_list,
@@ -58,7 +60,14 @@ urlpatterns = [
         publish_article,
         name="api_article_publish",
     ),
-    path("assets/", placeholder, {"section": "assets"}, name="assets"),
+    path("assets/", asset_library, name="assets"),
+    path("assets/<int:pk>/delete/", delete_asset, name="asset_delete"),
+    path("api/assets/images/", upload_image, name="api_asset_upload"),
+    path(
+        "api/assets/images/<int:pk>/delete/",
+        delete_image,
+        name="api_asset_delete",
+    ),
     path("resources/", placeholder, {"section": "resources"}, name="resources"),
     path("users/", placeholder, {"section": "users"}, name="users"),
     path("settings/", placeholder, {"section": "settings"}, name="settings"),

@@ -211,6 +211,17 @@ button, input, select, textarea { font: inherit; }
 .article-preview-meta { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 24px 0 42px; color: var(--studio-muted); font-size: .75rem; }
 .article-preview-body { font-family: "Noto Serif SC", serif; font-size: 1.03rem; line-height: 1.9; }
 .article-preview-body h2, .article-preview-body h3 { margin-top: 2.2em; font-family: "Noto Sans SC", sans-serif; line-height: 1.4; }
+.asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; padding: 24px clamp(20px, 4vw, 64px) 64px; }
+.asset-card { display: grid; gap: 12px; padding: 12px; border: 1px solid var(--studio-line); border-radius: 12px; background: rgba(255,255,255,.42); }
+.asset-card > img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; background: #e8e2d7; }
+.asset-card > div { display: grid; gap: 4px; }
+.asset-card small { color: var(--studio-muted); }
+.asset-card-actions { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px !important; }
+.asset-card-actions details { width: 100%; font-size: .85rem; color: var(--studio-muted); }
+.asset-card-actions ul { margin: 8px 0 0; padding-left: 18px; }
+.studio-editor figure { margin: 1.5rem 0; }
+.studio-editor figure img { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+.studio-editor figcaption { margin-top: .5rem; color: #6f6a61; font-size: .86rem; text-align: center; }
 
 @media (max-width: 700px) {
   .article-editor-topbar { grid-template-columns: auto 1fr; }

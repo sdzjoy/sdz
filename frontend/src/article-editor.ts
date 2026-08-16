@@ -8,6 +8,11 @@ import {
   type SaveResult,
 } from './autosave'
 import { createStudioEditor } from './editor'
+import {
+  createImageExtensions,
+  insertUploadedImage,
+  uploadImageFile,
+} from './extensions/image'
 
 interface ArticleConfig {
   schemaVersion: number
@@ -28,6 +33,7 @@ interface ArticleConfig {
   saveUrl: string
   publishUrl: string
   previewUrl: string
+  imageUploadUrl: string
 }
 
 interface ArticleDraft {
@@ -107,6 +113,8 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
   const previewButton = requiredElement<HTMLButtonElement>(root, '[data-preview]')
   const saveButton = requiredElement<HTMLButtonElement>(root, '[data-save]')
   const publishButton = requiredElement<HTMLButtonElement>(root, '[data-publish]')
+  const imageButton = requiredElement<HTMLButtonElement>(root, '[data-upload-image]')
+  const imageInput = requiredElement<HTMLInputElement>(root, '[data-image-input]')
 
   if (restored) {
     title.value = restored.title
@@ -123,9 +131,17 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
   }
 
   let controller: AutosaveController<ArticleDraft>
+  const imageExtensions = createImageExtensions({
+    upload: (file) => uploadImageFile(file, config.imageUploadUrl, csrfToken()),
+    onStatus: (message, failed = false) => {
+      saveState.dataset.state = failed ? 'failed' : 'saving'
+      saveState.textContent = message
+    },
+  })
   const editor = createStudioEditor({
     element: requiredElement<HTMLElement>(root, '[data-editor-surface]'),
     content: body,
+    extensions: imageExtensions,
     onChange: (document) => {
       body = document
       controller.markDirty()
@@ -202,6 +218,20 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
     input.addEventListener('change', () => controller.markDirty())
   })
   setupToolbar(root, editor)
+  imageButton.addEventListener('click', () => imageInput.click())
+  imageInput.addEventListener('change', () => {
+    const file = imageInput.files?.[0]
+    if (!file) return
+    saveState.dataset.state = 'saving'
+    saveState.textContent = `正在上传 ${file.name}…`
+    void uploadImageFile(file, config.imageUploadUrl, csrfToken())
+      .then((image) => insertUploadedImage(editor, image))
+      .catch((error: unknown) => {
+        saveState.dataset.state = 'failed'
+        saveState.textContent = error instanceof Error ? error.message : '图片上传失败'
+      })
+      .finally(() => { imageInput.value = '' })
+  })
 
   saveButton.addEventListener('click', () => void controller.flush('save'))
   publishButton.addEventListener('click', () => void controller.flush('publish'))

@@ -1,4 +1,4 @@
-import { Editor, type JSONContent } from '@tiptap/core'
+import { Editor, type AnyExtension, type JSONContent } from '@tiptap/core'
 import { TableKit } from '@tiptap/extension-table'
 import StarterKit from '@tiptap/starter-kit'
 
@@ -11,6 +11,7 @@ export interface StudioEditorOptions {
   content?: StudioDocument
   editable?: boolean
   onChange?: (document: StudioDocument) => void
+  extensions?: AnyExtension[]
 }
 
 export function createStudioEditor({
@@ -18,6 +19,7 @@ export function createStudioEditor({
   content = { type: 'doc', content: [{ type: 'paragraph' }] },
   editable = true,
   onChange,
+  extensions = [],
 }: StudioEditorOptions): Editor {
   return new Editor({
     element,
@@ -39,6 +41,7 @@ export function createStudioEditor({
           resizable: true,
         },
       }),
+      ...extensions,
     ],
     editorProps: {
       attributes: {
