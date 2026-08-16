@@ -121,15 +121,5 @@ def test_superuser_is_owner_and_sees_all_primary_navigation(client):
         assert label in body
 
 
-def test_legacy_wagtail_admin_remains_mfa_protected_during_compatibility(client):
-    staff = User.objects.create_user(
-        "legacy-staff@example.com",
-        TEST_PASSWORD,
-        is_staff=True,
-    )
-    client.force_login(staff)
-
-    response = client.get("/legacy-cms/")
-
-    assert response.status_code == 302
-    assert response.url == reverse("mfa_index")
+def test_retired_admin_route_is_not_available(client):
+    assert client.get("/legacy-cms/").status_code == 404

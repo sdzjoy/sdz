@@ -25,8 +25,6 @@ INSTALLED_APPS = [
     "accounts",
     "publishing",
     "studio",
-    "core",
-    "content",
     "standards",
     "resources",
     "notifications",
@@ -37,20 +35,6 @@ INSTALLED_APPS = [
     "allauth.mfa",
     "allauth.usersessions",
     "allauth.idp.oidc",
-    "wagtail.contrib.forms",
-    "wagtail.contrib.redirects",
-    "wagtail.contrib.table_block",
-    "wagtail.embeds",
-    "wagtail.sites",
-    "wagtail.users",
-    "wagtail.snippets",
-    "wagtail.documents",
-    "wagtail.images",
-    "wagtail.search",
-    "wagtail.admin",
-    "wagtail",
-    "modelcluster",
-    "taggit",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -65,7 +49,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "core.middleware.CanonicalHostMiddleware",
+    "operations.middleware.CanonicalHostMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -75,7 +59,6 @@ MIDDLEWARE = [
     "accounts.middleware.StaffMFARequiredMiddleware",
     "accounts.middleware.PrivateResponseMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -91,7 +74,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "accounts.context_processors.security_settings",
-                "core.context_processors.site_shell",
+                "publishing.context_processors.site_shell",
             ],
         },
     }
@@ -139,18 +122,8 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-WAGTAIL_SITE_NAME = "少惰主 · SDZJOY"
-WAGTAILADMIN_BASE_URL = os.getenv("WAGTAILADMIN_BASE_URL", "http://localhost:8000")
-WAGTAIL_I18N_ENABLED = False
-
 PUBLIC_SITE_ORIGIN = os.getenv("PUBLIC_SITE_ORIGIN", "")
 WWW_REDIRECT_HOST = os.getenv("WWW_REDIRECT_HOST", "")
-
-# django-treebeard 5.3 added this forward-looking check before Wagtail's
-# managers were updated. Wagtail maintainers confirm it is harmless on
-# Wagtail 7.4.2 and will be resolved by the next release:
-# https://github.com/wagtail/wagtail/issues/14487
-SILENCED_SYSTEM_CHECKS = ["treebeard.E001"]
 
 LOGIN_URL = "/account/login/"
 LOGIN_REDIRECT_URL = "/"

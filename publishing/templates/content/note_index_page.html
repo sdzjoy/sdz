@@ -1,0 +1,16 @@
+{% extends "base.html" %}{# publishing #}
+{% block title %}随记 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell listing-page content-index-page">
+    <header class="index-masthead">
+      <div><p class="eyebrow">NOTES</p><h1 class="section-title">随记</h1></div>
+      <div class="index-masthead__aside">
+        <p class="lede">{% if page.intro %}{{ page.intro }}{% else %}短一些的现场观察、验证结果和工作札记；值得展开的内容会继续整理成文章。{% endif %}</p>
+        <p class="index-count"><span>{{ notes|length|stringformat:"02d" }}</span> 条已公开</p>
+      </div>
+    </header>
+    <div class="card-grid">
+      {% for item in notes %}{% include "content/_card.html" with item=item type_label="随记" %}{% empty %}<section class="empty-state"><p class="eyebrow">FIELD NOTES</p><h2>第一批随记正在整理</h2><p>这里会保留日期、问题背景和验证结论，避免只留下无法复现的一句话。</p></section>{% endfor %}
+    </div>
+  </main>
+{% endblock %}

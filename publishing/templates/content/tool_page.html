@@ -1,0 +1,16 @@
+{% extends "base.html" %}{# publishing #}
+{% load notification_tags %}
+{% block title %}{{ page.seo_title|default:page.title }} · 少惰主{% endblock %}
+{% block structured_data %}
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ page.title|escapejs }}","description":"{{ page.summary|escapejs }}","applicationCategory":"EngineeringApplication","url":"{{ canonical_url|escapejs }}","author":{"@type":"Person","name":"少惰主"}}</script>
+{% endblock %}
+{% block content %}
+  <main class="shell detail-page">
+    {% include "content/_breadcrumbs.html" %}
+    <p class="eyebrow">TOOL · {{ page.get_status_display }}</p>
+    <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
+    {% item_actions "tool" page.pk %}
+    {% if page.service_url %}<p><a class="primary-link" href="{{ page.service_url }}" rel="noopener">打开工具</a></p>{% endif %}
+    <div class="prose">{% include "content/_body.html" with rendered_body=page.body_html body=page.body %}</div>
+  </main>
+{% endblock %}

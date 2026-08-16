@@ -4,11 +4,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
-from wagtail import urls as wagtail_urls
-from wagtail.admin import urls as wagtailadmin_urls
-from wagtail.documents import urls as wagtaildocs_urls
 
-from core.views import healthz, readyz
+from operations.views import healthz, readyz
 from publishing.feeds import ArticleFeed, NoteFeed
 from publishing.sitemaps import SITEMAPS
 
@@ -28,11 +25,8 @@ urlpatterns = [
     path("account/", include("allauth.urls")),
     path("django-admin/", admin.site.urls),
     path("cms/", include("studio.urls")),
-    path("legacy-cms/", include(wagtailadmin_urls)),
-    path("documents/", include(wagtaildocs_urls)),
     path("", include("allauth.idp.urls")),
     path("", include("publishing.urls")),
-    path("", include(wagtail_urls)),
 ]
 
 if settings.DEBUG:

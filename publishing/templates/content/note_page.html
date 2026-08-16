@@ -1,0 +1,17 @@
+{% extends "base.html" %}{# publishing #}
+{% load notification_tags %}
+{% block title %}{{ page.seo_title|default:page.title }} · 少惰主{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block structured_data %}
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"{{ page.title|escapejs }}","description":"{{ page.summary|escapejs }}","datePublished":"{{ page.noted_on|date:'c' }}","author":{"@type":"Person","name":"少惰主"},"url":"{{ canonical_url|escapejs }}","inLanguage":"zh-CN"}</script>
+{% endblock %}
+{% block content %}
+  <main class="shell detail-page">
+    {% include "content/_breadcrumbs.html" %}
+    <p class="eyebrow">NOTE · {{ page.noted_on }}</p>
+    <h1 class="detail-title">{{ page.title }}</h1><p class="lede">{{ page.summary }}</p>
+    {% item_actions "note" page.pk %}
+    {% if page.promoted_article %}<p class="promotion-link">这条随记已整理为：<a href="{{ page.promoted_article.url }}">{{ page.promoted_article.title }}</a></p>{% endif %}
+    <div class="prose">{% include "content/_body.html" with rendered_body=page.body_html body=page.body %}</div>
+  </main>
+{% endblock %}

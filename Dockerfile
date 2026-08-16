@@ -34,6 +34,7 @@ COPY --from=frontend-build --chown=app:app /app/static/studio/dist /app/static/s
 
 RUN mkdir -p /app/media /app/staticfiles /app/var \
     && chown -R app:app /app/media /app/staticfiles /app/var \
+    && python scripts/verify_fresh_install.py \
     && DJANGO_SECRET_KEY=build-only-not-for-runtime \
        DJANGO_ALLOWED_HOSTS=localhost \
        POSTGRES_PASSWORD=build-only-not-for-runtime \

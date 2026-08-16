@@ -135,13 +135,13 @@ class Standard(models.Model):
         blank=True,
     )
     related_articles = models.ManyToManyField(
-        "content.ArticlePage",
+        "publishing.Article",
         verbose_name="相关文章",
         related_name="related_standards",
         blank=True,
     )
     related_tools = models.ManyToManyField(
-        "content.ToolPage",
+        "publishing.Tool",
         verbose_name="相关工具",
         related_name="related_standards",
         blank=True,

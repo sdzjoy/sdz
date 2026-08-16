@@ -9,7 +9,7 @@ from django.urls import reverse
 
 
 class StaffMFARequiredMiddleware:
-    protected_prefixes = ("/cms/", "/legacy-cms/", "/django-admin/")
+    protected_prefixes = ("/cms/", "/django-admin/")
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -42,7 +42,6 @@ class PrivateResponseMiddleware:
         "/resources/",
         "/search/",
         "/cms/",
-        "/legacy-cms/",
         "/django-admin/",
     )
 

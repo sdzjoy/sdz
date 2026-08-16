@@ -1,7 +1,7 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "tests.py"]
-testpaths = ["tests", "accounts", "core", "content", "standards", "resources", "notifications"]
+testpaths = ["tests", "accounts", "standards", "resources", "notifications"]
 addopts = "--strict-markers --disable-warnings --cov=. --cov-report=term-missing:skip-covered --cov-fail-under=20"
 
 [tool.coverage.run]

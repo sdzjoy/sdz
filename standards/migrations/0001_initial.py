@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('content', '0002_create_section_pages'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -54,8 +53,6 @@ class Migration(migrations.Migration):
                 ('last_verified_at', models.DateTimeField(blank=True, null=True, verbose_name='最后人工核验时间')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='更新时间')),
-                ('related_articles', models.ManyToManyField(blank=True, related_name='related_standards', to='content.articlepage', verbose_name='相关文章')),
-                ('related_tools', models.ManyToManyField(blank=True, related_name='related_standards', to='content.toolpage', verbose_name='相关工具')),
                 ('verified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='standards_verified', to=settings.AUTH_USER_MODEL, verbose_name='最后核验人')),
             ],
             options={

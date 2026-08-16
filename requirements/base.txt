@@ -1,5 +1,4 @@
 Django==5.2.17
-Wagtail==7.4.2
 django-allauth[idp-oidc,mfa]==65.18.0
 markdown-it-py==4.2.0
 nh3==0.3.6

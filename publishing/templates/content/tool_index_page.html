@@ -1,0 +1,16 @@
+{% extends "base.html" %}{# publishing #}
+{% block title %}工具 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell listing-page content-index-page">
+    <header class="index-masthead">
+      <div><p class="eyebrow">TOOLS</p><h1 class="section-title">工具</h1></div>
+      <div class="index-masthead__aside">
+        <p class="lede">{% if page.intro %}{{ page.intro }}{% else %}把经常重复的查询、核对和计算步骤做成简单工具，并公开它们的依据、状态与适用边界。{% endif %}</p>
+        <p class="index-count"><span>{{ tools|length|stringformat:"02d" }}</span> 个已公开</p>
+      </div>
+    </header>
+    <div class="card-grid">
+      {% for item in tools %}{% include "content/_card.html" with item=item type_label="工具" %}{% empty %}<section class="empty-state"><p class="eyebrow">TOOLS IN REVIEW</p><h2>工具目录正在建立</h2><p>现有暖通参数库仍可正常使用；其他工具会在数据来源和运行边界确认后加入。</p><a class="text-link" href="https://hvac.sdzjoy.com/">进入暖通参数库 <span aria-hidden="true">↗</span></a></section>{% endfor %}
+    </div>
+  </main>
+{% endblock %}

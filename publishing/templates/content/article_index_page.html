@@ -1,0 +1,16 @@
+{% extends "base.html" %}{# publishing #}
+{% block title %}文章 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell listing-page content-index-page">
+    <header class="index-masthead">
+      <div><p class="eyebrow">ARTICLES</p><h1 class="section-title">文章</h1></div>
+      <div class="index-masthead__aside">
+        <p class="lede">{% if page.intro %}{{ page.intro }}{% else %}把规范研究、设计判断和系统实践整理成能够复查、引用和继续讨论的长篇记录。{% endif %}</p>
+        <p class="index-count"><span>{{ articles|length|stringformat:"02d" }}</span> 篇已公开</p>
+      </div>
+    </header>
+    <div class="card-grid">
+      {% for item in articles %}{% include "content/_card.html" with item=item type_label="文章" %}{% empty %}<section class="empty-state"><p class="eyebrow">WRITING IN PROGRESS</p><h2>文章正在逐篇整理</h2><p>首发内容确认后会出现在这里；尚未完成核验的草稿不会提前公开。</p></section>{% endfor %}
+    </div>
+  </main>
+{% endblock %}

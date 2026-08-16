@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from django.http import Http404
 from django.shortcuts import render
 from django.utils.cache import patch_vary_headers
-from wagtail.views import serve as serve_legacy_page
 
 from publishing.documents import render_document, validate_document
 from publishing.models import ContentEntry, SiteProfile
@@ -88,9 +87,7 @@ def home(request):
         "latest_articles": latest_articles,
         "latest_notes": latest_notes,
         "featured_tools": featured_tools,
-        "has_public_content": bool(
-            projects or latest_articles or latest_notes or featured_tools
-        ),
+        "has_public_content": bool(projects or latest_articles or latest_notes or featured_tools),
     }
     return _public_render(request, "core/home_page.html", context)
 
@@ -122,10 +119,7 @@ def content_detail(request, kind, slug):
         raise Http404
     entry = _public_queryset().filter(kind=kind, published_slug=slug).first()
     if entry is None:
-        # The compatibility image keeps legacy public URLs readable until task 13
-        # has imported and verified every Wagtail page. The final image removes
-        # this fallback together with Wagtail itself.
-        return serve_legacy_page(request, f"{config['collection']}/{slug}/")
+        raise Http404
     page = PublishedContent(entry, user=request.user)
     context = {
         "page": page,

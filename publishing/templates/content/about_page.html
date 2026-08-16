@@ -1,0 +1,10 @@
+{% extends "base.html" %}{# publishing #}
+{% block title %}关于 · 少惰主{% endblock %}
+{% block content %}
+  <main class="shell detail-page">
+    {% include "content/_breadcrumbs.html" %}
+    <p class="eyebrow">ABOUT</p><h1 class="detail-title">{{ page.title }}</h1>
+    <p class="lede">{{ page.intro }}</p>
+    <div class="prose">{% include "content/_body.html" with rendered_body=page.body_html body=page.body %}</div>
+  </main>
+{% endblock %}

@@ -1,0 +1,8 @@
+{# Public template owned by the publishing app. #}
+{% if breadcrumbs %}
+  <nav class="content-breadcrumbs" aria-label="面包屑">
+    {% for label, url in breadcrumbs %}
+      {% if url %}<a href="{{ url }}">{{ label }}</a><span aria-hidden="true">/</span>{% else %}<span aria-current="page">{{ label }}</span>{% endif %}
+    {% endfor %}
+  </nav>
+{% endif %}
