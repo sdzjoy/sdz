@@ -75,6 +75,10 @@ def test_editor_can_open_article_pages_but_resource_admin_cannot(client):
     assert create_response.status_code == 200
     assert edit_response.status_code == 200
     assert "像写公众号一样，专心写正文" in create_response.content.decode()
+    create_document = create_response.content.decode()
+    assert "正文编辑器正在加载" in create_document
+    assert 'href="/static/studio/dist/assets/editor-' in create_document
+    assert '.css"' in create_document
     assert "编辑中的文章" in edit_response.content.decode()
     assert create_response["Cache-Control"] == "private, no-store"
 

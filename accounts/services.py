@@ -31,7 +31,12 @@ def change_membership_level(*, user, to_level, reason, actor=None):
         and locked_user.email_verified_at is not None
     )
     if not is_email_activation:
-        if actor is None or not actor.is_active or not actor.is_staff:
+        is_studio_owner = bool(
+            actor
+            and actor.is_active
+            and actor.groups.filter(name="studio-owner").exists()
+        )
+        if actor is None or not actor.is_active or not (actor.is_staff or is_studio_owner):
             raise PermissionDenied("只有管理员可以调整会员等级。")
         if actor.pk == locked_user.pk and LEVEL_RANK[to_level] > LEVEL_RANK[from_level]:
             raise PermissionDenied("不能提升自己的会员等级。")

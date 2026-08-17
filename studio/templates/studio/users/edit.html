@@ -1,0 +1,31 @@
+{% extends "studio/base.html" %}
+
+{% block title %}编辑用户 · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header studio-management-header">
+    <div>
+      <p class="studio-eyebrow">账号与权限</p>
+      <h1>{{ target_user.display_name|default:target_user.email }}</h1>
+      <p>{{ target_user.email }}{% if target_user.email_verified_at %} · 邮箱已验证{% else %} · 邮箱未验证{% endif %}</p>
+    </div>
+    <a class="studio-button" href="{% url 'studio:users' %}">返回用户列表</a>
+  </header>
+
+  <form class="studio-panel studio-management-form" method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="studio-form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <label class="studio-form-field{% if field.errors %} studio-form-field-error{% endif %}">
+        <span>{{ field.label }}</span>
+        {{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<strong>{{ error }}</strong>{% endfor %}
+      </label>
+    {% endfor %}
+    <div class="studio-form-actions">
+      <a href="{% url 'studio:users' %}">取消</a>
+      <button class="studio-button studio-button-primary" type="submit">保存用户设置</button>
+    </div>
+  </form>
+{% endblock %}

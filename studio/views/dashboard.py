@@ -5,7 +5,6 @@ from publishing.models import ContentEntry, Note
 
 from ..permissions import (
     CONTENT_ROLES,
-    OWNER_ROLES,
     RESOURCE_ROLES,
     StudioRole,
     get_studio_role,
@@ -14,12 +13,7 @@ from ..permissions import (
 )
 
 PLACEHOLDERS = {
-    "content": ("内容", "内容列表将在本批下一步接入。", CONTENT_ROLES),
-    "article_create": ("写文章", "文章编辑器将在本批最后一步接入。", CONTENT_ROLES),
-    "assets": ("图片素材", "安全图片上传将在下一批接入。", RESOURCE_ROLES),
     "resources": ("网盘资源", "现有资源库将在后续改接到这个入口。", RESOURCE_ROLES),
-    "users": ("用户", "用户与会员管理将在后续接入。", OWNER_ROLES),
-    "settings": ("设置", "网站设置将在后续接入。", OWNER_ROLES),
 }
 
 

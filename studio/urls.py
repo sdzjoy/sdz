@@ -17,6 +17,7 @@ from .views.content import (
 )
 from .views.dashboard import dashboard, placeholder
 from .views.editor import article_create, article_edit, article_preview
+from .views.management import site_settings, user_edit, user_list
 from .views.revisions import restore_content_revision, revision_list, revision_preview
 
 app_name = "studio"
@@ -87,6 +88,7 @@ urlpatterns = [
         name="api_asset_delete",
     ),
     path("resources/", placeholder, {"section": "resources"}, name="resources"),
-    path("users/", placeholder, {"section": "users"}, name="users"),
-    path("settings/", placeholder, {"section": "settings"}, name="settings"),
+    path("users/", user_list, name="users"),
+    path("users/<int:pk>/", user_edit, name="user_edit"),
+    path("settings/", site_settings, name="settings"),
 ]

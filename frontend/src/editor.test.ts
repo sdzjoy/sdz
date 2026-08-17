@@ -30,6 +30,21 @@ describe('createStudioEditor', () => {
     expect(element.querySelector('[role="textbox"]')).not.toBeNull()
   })
 
+  it('makes an empty editor visibly discoverable and clears the empty state after typing', () => {
+    const { editor, element } = mountEditor()
+    const textbox = element.querySelector<HTMLElement>('[role="textbox"]')
+
+    expect(textbox?.dataset.empty).toBe('true')
+    expect(textbox?.dataset.placeholder).toContain('开始写正文')
+
+    editor.commands.setContent({
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: '正文已经开始' }] }],
+    })
+
+    expect(textbox?.dataset.empty).toBe('false')
+  })
+
   it('reports JSON updates to the caller', () => {
     const onChange = vi.fn()
     const { editor } = mountEditor({ onChange })

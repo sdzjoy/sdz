@@ -1,0 +1,41 @@
+{% extends "studio/base.html" %}
+
+{% block title %}设置 · 少惰主后台{% endblock %}
+
+{% block content %}
+  <header class="studio-page-header">
+    <div>
+      <p class="studio-eyebrow">网站资料</p>
+      <h1>设置</h1>
+      <p>维护主站名称、站长称呼和各栏目说明。保存后公开页面立即使用新内容。</p>
+    </div>
+    <a class="studio-button" href="{{ public_site_origin }}/" target="_blank" rel="noopener">查看主站</a>
+  </header>
+
+  <div class="studio-settings-layout">
+    <form class="studio-panel studio-management-form" method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="studio-form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        <label class="studio-form-field{% if field.errors %} studio-form-field-error{% endif %}">
+          <span>{{ field.label }}</span>
+          {{ field }}
+          {% for error in field.errors %}<strong>{{ error }}</strong>{% endfor %}
+        </label>
+      {% endfor %}
+      <div class="studio-form-actions">
+        <button class="studio-button studio-button-primary" type="submit">保存网站设置</button>
+      </div>
+    </form>
+
+    <aside class="studio-panel studio-settings-note">
+      <p class="studio-eyebrow">当前状态</p>
+      <h2>立即生效</h2>
+      <p>这些字段用于首页和文章、项目、随记、工具、关于等公开栏目，不需要重新部署。</p>
+      <dl>
+        <div><dt>公开地址</dt><dd>{{ public_site_origin }}</dd></div>
+        <div><dt>最近保存</dt><dd>{% if site_profile %}{{ site_profile.updated_at|date:'Y-m-d H:i' }}{% else %}尚未保存{% endif %}</dd></div>
+      </dl>
+    </aside>
+  </div>
+{% endblock %}

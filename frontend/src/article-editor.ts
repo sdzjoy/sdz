@@ -207,6 +207,7 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
   const imageButton = requiredElement<HTMLButtonElement>(root, '[data-upload-image]')
   const imageInput = requiredElement<HTMLInputElement>(root, '[data-image-input]')
   const floatingToolbar = requiredElement<HTMLElement>(root, '[data-floating-toolbar]')
+  const editorSurface = requiredElement<HTMLElement>(root, '[data-editor-surface]')
 
   if (restored) {
     title.value = restored.title
@@ -243,8 +244,9 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
     ParameterCard,
     CloudResource,
   ]
+  editorSurface.replaceChildren()
   const editor = createStudioEditor({
-    element: requiredElement<HTMLElement>(root, '[data-editor-surface]'),
+    element: editorSurface,
     content: body,
     extensions: editorExtensions,
     onChange: (document) => {
@@ -252,6 +254,7 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
       controller.markDirty()
     },
   })
+  editorSurface.dataset.ready = 'true'
 
   const snapshot = (): ArticleDraft => ({
     title: title.value.trim(),
@@ -373,5 +376,17 @@ function mountArticleEditor(root: HTMLElement, initialConfig: ArticleConfig): vo
 const root = document.querySelector<HTMLElement>('[data-article-editor]')
 const configElement = document.querySelector<HTMLScriptElement>('#article-editor-config')
 if (root && configElement?.textContent) {
-  mountArticleEditor(root, JSON.parse(configElement.textContent) as ArticleConfig)
+  try {
+    mountArticleEditor(root, JSON.parse(configElement.textContent) as ArticleConfig)
+  } catch (error) {
+    const surface = root.querySelector<HTMLElement>('[data-editor-surface]')
+    if (surface) {
+      surface.replaceChildren()
+      const message = document.createElement('p')
+      message.className = 'article-editor-error'
+      message.textContent = '正文编辑器加载失败，请刷新页面；如果仍然失败，请返回内容列表后重试。'
+      surface.append(message)
+    }
+    console.error('Article editor failed to initialize', error)
+  }
 }

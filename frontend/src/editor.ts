@@ -10,18 +10,24 @@ export interface StudioEditorOptions {
   element: HTMLElement
   content?: StudioDocument
   editable?: boolean
+  placeholder?: string
   onChange?: (document: StudioDocument) => void
   extensions?: AnyExtension[]
+}
+
+function syncEmptyState(editor: Editor): void {
+  editor.view.dom.dataset.empty = String(editor.isEmpty)
 }
 
 export function createStudioEditor({
   element,
   content = { type: 'doc', content: [{ type: 'paragraph' }] },
   editable = true,
+  placeholder = '从这里开始写正文，输入 / 可以插入图片、参数卡和规范引用',
   onChange,
   extensions = [],
 }: StudioEditorOptions): Editor {
-  return new Editor({
+  const editor = new Editor({
     element,
     content,
     editable,
@@ -49,8 +55,15 @@ export function createStudioEditor({
         role: 'textbox',
         'aria-multiline': 'true',
         'aria-label': '正文编辑器',
+        'data-placeholder': placeholder,
       },
     },
-    onUpdate: ({ editor }) => onChange?.(editor.getJSON()),
+    onCreate: ({ editor }) => syncEmptyState(editor),
+    onUpdate: ({ editor }) => {
+      syncEmptyState(editor)
+      onChange?.(editor.getJSON())
+    },
   })
+  syncEmptyState(editor)
+  return editor
 }

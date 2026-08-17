@@ -1,10 +1,22 @@
 .studio-editor {
-  min-height: 28rem;
+  position: relative;
+  min-height: 22rem;
+  padding: 0.35rem 0;
   color: #181815;
   font-family: "Noto Serif SC", "Source Han Serif SC", serif;
   font-size: 1.0625rem;
   line-height: 1.85;
   outline: none;
+}
+
+.studio-editor[data-empty="true"]::before {
+  position: absolute;
+  inset: 0.35rem auto auto 0;
+  color: #9b9488;
+  content: attr(data-placeholder);
+  font-family: "Noto Sans SC", "Source Han Sans SC", sans-serif;
+  font-size: 0.95rem;
+  pointer-events: none;
 }
 
 .studio-editor > * + * {

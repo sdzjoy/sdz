@@ -14,6 +14,8 @@ class AuditEvent(models.Model):
         RESTORE_REVISION = "restore_revision", "恢复历史版本"
         ASSET_UPLOAD = "asset_upload", "上传素材"
         ASSET_DELETE = "asset_delete", "删除素材"
+        USER_UPDATE = "user_update", "更新用户设置"
+        SITE_SETTINGS_UPDATE = "site_settings_update", "更新网站设置"
 
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
